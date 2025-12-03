@@ -1,0 +1,6 @@
+@Backend_FPTU_Internal_Event.WebAPI_HostAddress = http://localhost:5123
+
+GET {{Backend_FPTU_Internal_Event.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
