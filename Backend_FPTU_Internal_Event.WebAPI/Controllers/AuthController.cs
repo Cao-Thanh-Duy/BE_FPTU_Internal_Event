@@ -1,6 +1,8 @@
 ﻿using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
 {
@@ -25,6 +27,23 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
 
             return Ok(result);
         }
-    }
 
+        // Test endpoint để kiểm tra JWT
+        [Authorize]
+        [HttpGet("verify-token")]
+        public IActionResult VerifyToken()
+        {
+            var userId = User.FindFirst("userId")?.Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            return Ok(new
+            {
+                message = "Token is valid",
+                userId,
+                email,
+                role
+            });
+        }
+    }
 }
