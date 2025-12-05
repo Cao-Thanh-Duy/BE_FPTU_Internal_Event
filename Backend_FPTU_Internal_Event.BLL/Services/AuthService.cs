@@ -2,6 +2,8 @@
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.BLL.Models;
 using Backend_FPTU_Internal_Event.DAL.Data;
+using Backend_FPTU_Internal_Event.DAL.Interface;
+using Backend_FPTU_Internal_Event.DAL.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -19,24 +21,20 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly JwtSettings _jwtSettings;
 
-        public AuthService(ApplicationDbContext context, IOptions<JwtSettings> jwtSettings)
+        public AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtSettings)
         {
-            _context = context;
+            _userRepository = userRepository;
             _jwtSettings = jwtSettings.Value;
         }
 
         public LoginResponse? Login(LoginRequest request)
         {
             string hashedInput = HashPassword(request.Password);
-
-            var user = _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefault(u =>
-                    u.Email == request.Email &&
-                    u.HashPassword == hashedInput);
+            var user = _userRepository.Login(request.Email, hashedInput);
+            
 
             if (user == null)
                 return null;

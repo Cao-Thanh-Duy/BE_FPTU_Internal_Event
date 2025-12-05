@@ -11,8 +11,8 @@ namespace Backend_FPTU_Internal_Event.DAL.Entities
         public int SlotId { get; set; }
         public int EventId { get; set; }
 
-        public required Slot Slot { get; set; } 
-        public required Event Event { get; set; }
+        public Slot? Slot { get; set; } 
+        public Event? Event { get; set; }
 
     }
 }

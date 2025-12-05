@@ -10,7 +10,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Entities
     {
         public int EventId { get; set; }
         public int UserId { get; set; }
-        public required Event Event { get; set; } 
-        public required User User { get; set; }
+        public Event? Event { get; set; } 
+        public User? User { get; set; }
     }
 }

@@ -20,13 +20,36 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-            var result = _authService.Login(request);
+            try
+            {
+                var result = _authService.Login(request);
 
-            if (result == null)
-                return Unauthorized(new { message = "Invalid email or password" });
+                if (result == null)
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Invalid email or password"
+                    });
+                }
 
-            return Ok(result);
+                return Ok(new
+                {
+                    success = true,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
         }
+
 
         // Test endpoint để kiểm tra JWT
         [Authorize]

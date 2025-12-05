@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Backend_FPTU_Internal_Event.DAL.Interface;
+using Backend_FPTU_Internal_Event.DAL.Repositories;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Backend_FPTU_Internal_Event.WebAPI
 {
@@ -52,10 +55,15 @@ namespace Backend_FPTU_Internal_Event.WebAPI
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5174")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
+                    policy.WithOrigins(
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "http://localhost:3000"
+                        
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
                 });
             });
 
@@ -64,10 +72,13 @@ namespace Backend_FPTU_Internal_Event.WebAPI
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
-            // Configure Swagger with JWT
+            // Configure Swagger with JWT and Annotations
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "FPTU Internal Event API", Version = "v1" });
+
+                // Enable annotations
+                c.EnableAnnotations();
 
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -95,26 +106,34 @@ namespace Backend_FPTU_Internal_Event.WebAPI
                 });
             });
 
-            builder.Services.AddScoped<IAuthService, AuthService>(); //
+            // Register Services and Repositories
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
 
-            // Auto migrate database
+            // Auto migrate database and seed data
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
-                    context.Database.Migrate();
-
                     var logger = services.GetRequiredService<ILogger<Program>>();
+                    
+                    // Run migrations
+                    context.Database.Migrate();
                     logger.LogInformation("Database connected/migrated successfully!");
+
+                    // Seed database
+                    var seeder = new DbSeeder(context, services.GetRequiredService<ILogger<DbSeeder>>());
+                    seeder.SeedAsync().Wait();
                 }
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while migrating the database.");
+                    logger.LogError(ex, "An error occurred while migrating or seeding the database.");
                 }
             }
 
