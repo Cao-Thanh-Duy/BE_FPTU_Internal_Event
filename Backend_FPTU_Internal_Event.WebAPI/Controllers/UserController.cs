@@ -18,7 +18,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet]
         [SwaggerOperation(
             Summary = "Get All User",
@@ -48,7 +48,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [SwaggerOperation(
             Summary = "Get User by Id",
@@ -138,6 +138,103 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     success = false,
                     message = "Internal server error",
                     detail = ex.Message
+                });
+            }
+        }
+
+        //[Authorize(Roles = "Admin")]
+        [HttpPut]
+        [SwaggerOperation(
+            Summary = "Update User",
+            Description = ""
+        )]
+        public IActionResult UpdateUser([FromQuery] int userId, [FromBody] string userName)
+        {
+            try
+            {
+                var result = _userService.UpdateUserName(userId, userName);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Update user successfully ",
+                        data = result
+                    });
+                    
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Internal server"
+                        
+
+                    });
+                }
+                
+            }
+            catch (KeyNotFoundException knx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = knx.Message
+
+                });
+            }
+            catch(Exception ex) 
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+
+                });
+            }
+
+        }
+
+        [HttpDelete]
+        [SwaggerOperation(
+            Summary = "Delete User",
+            Description = ""
+        )]
+
+        public IActionResult DeleteUser([FromQuery] int userId)
+        {
+            try
+            {
+                var result = _userService.DeleteUser(userId);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Delete user successfully ",
+                        data = result
+                    });
+
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Internal server"
+
+
+                    });
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new 
+                {
+                    success = false,
+                    message = ex.Message
+
                 });
             }
         }

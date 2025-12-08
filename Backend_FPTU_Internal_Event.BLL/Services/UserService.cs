@@ -28,7 +28,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 var userDTO = new UserDTO()
                 {
                     Email = user.Email,
-                    RoleName = user.Role.RoleName,
+                    RoleName = user.Role?.RoleName ?? string.Empty,
                     UserId = user.UserId,
                     UserName = user.UserName
                 };
@@ -71,7 +71,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 UserId = createdUser.UserId,
                 UserName = createdUser.UserName,
                 Email = createdUser.Email,
-                RoleName = createdUser.Role.RoleName
+                RoleName = createdUser.Role?.RoleName ?? string.Empty
             };
         }
 
@@ -86,15 +86,49 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 UserId = user.UserId,
                 UserName = user.UserName,
                 Email = user.Email,
-                RoleName = user.Role.RoleName
+                RoleName = user.Role?.RoleName ?? string.Empty
             };
         }
 
+        
         private string HashPassword(string password)
         {
             using var sha = SHA256.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
             return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+        }
+
+        public UserDTO UpdateUserName(int userId, string userName)
+        {
+            var user = _userRepository.GetUserById(userId);
+            if (user == null) throw new KeyNotFoundException($"User id {userId} do not exist");
+
+            user.UserName = userName;
+            _userRepository.SaveChanges();
+
+            return new UserDTO
+            {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                Email = user.Email,
+                RoleName = user.Role.RoleName
+
+            };
+           
+
+        }
+
+        public bool DeleteUser(int userId)
+        {
+            var user = _userRepository.DeleteUser(userId);
+
+            if (!user)
+                throw new KeyNotFoundException($"User with id {userId} does not exist");
+
+            _userRepository.SaveChanges();
+            return true;
+
+
         }
     }
 }

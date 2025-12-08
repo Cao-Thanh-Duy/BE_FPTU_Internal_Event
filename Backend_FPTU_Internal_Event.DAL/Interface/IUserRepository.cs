@@ -12,8 +12,11 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         List<User> GetAllUser();
         User? Login(string username, string password);
         User? GetUserByEmail(string email);
+
         User? GetUserById(int userId);
         void AddUser(User user);
         void SaveChanges();
+
+        bool DeleteUser(int userId);
     }
 }

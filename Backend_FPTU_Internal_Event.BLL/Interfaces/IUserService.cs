@@ -13,5 +13,9 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
         List<UserDTO> GetAllUser();
         UserDTO? CreateUser(CreateUserRequest request);
         UserDTO? GetUserById(int userId);
+
+        UserDTO? UpdateUserName (int userId ,string userName);
+
+        bool DeleteUser(int userId);
     }
 }

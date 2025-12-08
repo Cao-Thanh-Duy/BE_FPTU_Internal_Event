@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Backend_FPTU_Internal_Event.DAL.Repositories
 {
+
     public class UserRepository : IUserRepository
     {
         private readonly ApplicationDbContext _context;
@@ -56,6 +57,24 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+
+        public bool DeleteUser(int userId)
+        {
+            var loadUser = _context.Users.Find(userId);
+            if (loadUser != null)
+            {
+                _context.Users.Remove(loadUser);
+                return true;
+            }
+            else return false;
+        }
+
+        public User? GetUserByUserName(string userName)
+        {
+            return _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefault(u => u.UserName == userName);
         }
     }
 }
