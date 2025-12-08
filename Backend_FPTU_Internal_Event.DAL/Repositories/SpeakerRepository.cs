@@ -1,0 +1,37 @@
+﻿using Backend_FPTU_Internal_Event.DAL.Data;
+using Backend_FPTU_Internal_Event.DAL.Entities;
+using Backend_FPTU_Internal_Event.DAL.Interface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Backend_FPTU_Internal_Event.DAL.Repositories
+{
+    public class SpeakerRepository : ISpeakerRepository
+    {
+        private readonly ApplicationDbContext _context;
+        public SpeakerRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+
+        public Speaker? AddSpeaker(Speaker speaker)
+        {
+            _context.Add(speaker);
+            return speaker;
+        }
+
+        public List<Speaker> GetAllSpeaker()
+        {
+            return _context.Speakers.ToList();
+        }
+
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
+        }
+    }
+}
