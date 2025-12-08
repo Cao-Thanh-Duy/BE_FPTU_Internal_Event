@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Backend_FPTU_Internal_Event.BLL.DTOs
 {
-    public class EventDTO
+    public class CreateSlotRequest
     {
-       
+        public string SlotName { get; set; }
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly EndTime { get; set; }
     }
 }
