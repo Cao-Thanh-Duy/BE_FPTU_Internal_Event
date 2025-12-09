@@ -117,5 +117,47 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 });
             }
         }
+
+        [HttpDelete]
+        public IActionResult DeleteSpeaker([FromQuery] int speakerId)
+        {
+            try
+            {
+                var result = _speakerService.DeleteSpeaker(speakerId);
+                if (result)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Speaker deleted successfully"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Delete failed"
+                    });
+                }
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+        }
     }
-}

@@ -41,6 +41,17 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             };
         }
 
+        public bool DeleteSlot(int slotId)
+        {
+            var user = _slotRepository.DeleteSlot(slotId);
+
+            if (!user)
+                throw new KeyNotFoundException($"Slot with id {slotId} does not exist");
+
+            _slotRepository.SaveChanges();
+            return true;
+        }
+
         public List<SlotDTO> GetAllSlot()
         {
             List<SlotDTO> listSlotDTO = new();
@@ -66,7 +77,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
             return new SlotDTO
             {
-                SlotId = slotId,
+                SlotId = slot.SlotId,
                 SlotName = slot.SlotName,
                 StartTime = slot.StartTime,
                 EndTime = slot.EndtTime

@@ -2,6 +2,7 @@
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.DAL.Entities;
 using Backend_FPTU_Internal_Event.DAL.Interface;
+using Backend_FPTU_Internal_Event.DAL.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,26 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 SpeakerName = newSpeaker.SpeakerName,
                 SpeakerDecription = newSpeaker.SpeakerDescription
             };
+        }
+
+        public bool DeleteSpeaker(int speakerId)
+        {
+            // Kiểm tra Speaker có tồn tại không
+            var speaker = _speakerRepository.GetSpeakerById(speakerId);
+            if (speaker == null)
+                throw new KeyNotFoundException($"Speaker with id {speakerId} does not exist");
+
+            // Xóa tất cả SpeakerEvent liên quan TRƯỚC
+            _speakerRepository.DeleteSpeakerEvents(speakerId);
+
+            // Sau đó xóa Speaker
+            var result = _speakerRepository.DeleteSpeaker(speakerId);
+
+            if (!result)
+                return false;
+
+            _speakerRepository.SaveChanges();
+            return true;
         }
 
         public List<SpeakerDTO> GetAllSpeaker()

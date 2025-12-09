@@ -24,6 +24,17 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
             return slot;
         }
 
+        public bool DeleteSlot(int slotId)
+        {
+            var loadSlot = _context.Slots.Find(slotId);
+            if (loadSlot != null)
+            {
+                _context.Slots.Remove(loadSlot);
+                return true;
+            }
+            else return false;
+        }
+
         public List<Slot> GetAllSlot()
         {
             return _context.Slots.ToList();

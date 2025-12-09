@@ -24,6 +24,30 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
             return speaker;
         }
 
+        public bool DeleteSpeaker(int speakerId)
+        {
+            var loadSpeaker = _context.Speakers.Find(speakerId);
+            if (loadSpeaker != null)
+            {
+                _context.Speakers.Remove(loadSpeaker);
+                return true;
+            }
+            else return false;
+        }
+
+        public void DeleteSpeakerEvents(int speakerId)
+        {
+            // Xóa tất cả SpeakerEvent liên quan đến Speaker này
+            var speakerEvents = _context.SpeakerEvents
+                .Where(se => se.SpeakerId == speakerId)
+                .ToList();
+
+            if (speakerEvents.Any())
+            {
+                _context.SpeakerEvents.RemoveRange(speakerEvents);
+            }
+        }
+
         public List<Speaker> GetAllSpeaker()
         {
             return _context.Speakers.ToList();

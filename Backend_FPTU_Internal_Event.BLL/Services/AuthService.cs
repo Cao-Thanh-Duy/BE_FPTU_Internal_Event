@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Backend_FPTU_Internal_Event.BLL.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService : IAuthService //
     {
         private readonly IUserRepository _userRepository;
         private readonly JwtSettings _jwtSettings;

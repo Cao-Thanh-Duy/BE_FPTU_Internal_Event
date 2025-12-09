@@ -92,7 +92,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         
         /// Create new event - Admin/Organizer only
      
-        [Authorize(Roles = "Admin,Organizer")]
+        //[Authorize(Roles = "Admin,Organizer")]
         [HttpPost]
         [SwaggerOperation(
             Summary = "Create New Event",

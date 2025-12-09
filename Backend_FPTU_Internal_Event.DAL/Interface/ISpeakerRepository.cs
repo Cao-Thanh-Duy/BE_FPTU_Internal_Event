@@ -14,5 +14,8 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         Speaker? GetSpeakerById(int speakerId);
         List<Speaker> GetAllSpeaker();
         void SaveChanges();
+
+        void DeleteSpeakerEvents(int speakerId);
+        bool DeleteSpeaker(int speakerId);
     }
 }

@@ -22,11 +22,21 @@ namespace Backend_FPTU_Internal_Event.BLL.DTOs
         public string LocationDetails { get; set; } = string.Empty;
 
         //Slot
+        public List<EventSlotDTO> SlotEvent { get; set; }
+
+        //Speaker
+        public List<SpeakerEventDTO> SpeakerEvent { get; set; }
+    }
+
+    public class EventSlotDTO()
+    {
         public string SlotName { get; set; } = string.Empty;
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
+    }
 
-        //Speaker
+    public class SpeakerEventDTO()
+    {
         public string SpeakerName { get; set; } = string.Empty;
         public string SpeakerDescription { get; set; } = string.Empty;
     }

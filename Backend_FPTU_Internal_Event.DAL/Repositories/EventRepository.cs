@@ -59,6 +59,16 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         {
             _context.SaveChanges();
         }
+
+        public List<EventSchedule> GetAllEventSchedules(int eventId)
+        {
+            return _context.EventSchedules.Where(es => es.EventId == eventId).ToList();
+        }
+
+        public List<SpeakerEvent> GetAllSpeakerEvents(int eventId)
+        {
+            return _context.SpeakerEvents.Where(se =>  se.EventId == eventId).ToList(); 
+        }
     }
 
 

@@ -1,6 +1,7 @@
 ﻿using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.BLL.Services;
+using Backend_FPTU_Internal_Event.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -113,6 +114,45 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     success = false,
                     message = "Internal server error",
                     detail = ex.Message
+                });
+            }
+        }
+
+
+        [HttpDelete]
+        public IActionResult DeleteSlot([FromQuery] int slotId)
+        {
+            try
+            {
+                var result = _slotService.DeleteSlot(slotId);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Delete Slot successfully ",
+                        data = result
+                    });
+
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Internal server"
+
+
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+
                 });
             }
         }

@@ -14,5 +14,6 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         List<Slot> GetAllSlot();
         void SaveChanges();
 
+        bool DeleteSlot(int slotId);
     }
 }
