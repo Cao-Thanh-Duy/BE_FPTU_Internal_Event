@@ -10,6 +10,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
     public interface ISlotRepository
     {
         Slot? AddSlot(Slot slot);
+        Slot? GetSlotById(int slotId);
         List<Slot> GetAllSlot();
         void SaveChanges();
 

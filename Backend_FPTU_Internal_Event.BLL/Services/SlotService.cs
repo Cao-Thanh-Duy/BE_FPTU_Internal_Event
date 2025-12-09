@@ -58,5 +58,20 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             }
             return listSlotDTO;
         }
+
+        public SlotDTO? GetSlotById(int slotId)
+        {
+            var slot = _slotRepository.GetSlotById(slotId);
+            if (slot == null) return null;
+
+            return new SlotDTO
+            {
+                SlotId = slotId,
+                SlotName = slot.SlotName,
+                StartTime = slot.StartTime,
+                EndTime = slot.EndtTime
+
+            };
+        }
     }
 }

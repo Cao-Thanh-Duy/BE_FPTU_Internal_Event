@@ -11,5 +11,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
     {
         VenueDTO? CreateVenue(CreateVenueRequest request);
         List<VenueDTO> GetAllVenue();
+
+        VenueDTO? GetVenueById(int VenueId);
     }
 }

@@ -10,7 +10,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
     public interface ISpeakerService
     {
         SpeakerDTO? CreateSpeaker(CreateSpeakerRequest request);
-
+        SpeakerDTO? GetSpeakerById(int speakerId);
         List<SpeakerDTO> GetAllSpeaker();
 
     }

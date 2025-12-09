@@ -29,6 +29,11 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
             return _context.Slots.ToList();
         }
 
+        public Slot? GetSlotById(int slotId)
+        {
+            return _context.Slots.FirstOrDefault(v => v.SlotId == slotId);
+        }
+
         public void SaveChanges()
         {
             _context.SaveChanges();

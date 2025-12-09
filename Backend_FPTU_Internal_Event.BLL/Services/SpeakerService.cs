@@ -54,5 +54,18 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             }
             return listSpeakerDTO;
         }
+
+        public SpeakerDTO? GetSpeakerById(int speakerId)
+        {
+            var speaker = _speakerRepository.GetSpeakerById(speakerId);
+            if (speaker == null) return null;
+
+            return new SpeakerDTO
+            {
+                SpeakerId = speaker.SpeakerId,
+                SpeakerName = speaker.SpeakerName,
+                SpeakerDecription = speaker.SpeakerDescription
+            };
+        }
     }
 }

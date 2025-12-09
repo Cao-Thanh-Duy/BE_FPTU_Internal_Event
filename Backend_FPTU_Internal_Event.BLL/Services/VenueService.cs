@@ -58,5 +58,21 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             }
             return listVenueDTO;
         }
+
+
+        public VenueDTO? GetVenueById(int venueId)
+        {
+            var venue = _venueRepository.GetVenueById(venueId);
+            if (venue == null)
+                return null;
+
+            return new VenueDTO
+            {
+                VenueId = venue.VenueId,
+                VenueName = venue.VenueName,
+                MaxSeat = venue.MaxSeat,
+                LocationDetails = venue.LocationDetails
+            };
+        }
     }
 }

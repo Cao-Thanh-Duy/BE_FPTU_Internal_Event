@@ -1,5 +1,6 @@
 ﻿using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
+using Backend_FPTU_Internal_Event.BLL.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -79,6 +80,39 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 {
                     success = false,
                     message = "Internal Server",
+                    detail = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetSpeackerById(int id)
+        {
+            try
+            {
+                var result = _speakerService.GetSpeakerById(id);
+                if (result == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = $"Speaker with ID {id} not found"
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User retrieved successfully",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
                     detail = ex.Message
                 });
             }

@@ -29,6 +29,11 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
             return _context.Speakers.ToList();
         }
 
+        public Speaker? GetSpeakerById(int speakerId)
+        {
+            return _context.Speakers.FirstOrDefault(s => s.SpeakerId == speakerId);
+        }
+
         public void SaveChanges()
         {
             _context.SaveChanges();

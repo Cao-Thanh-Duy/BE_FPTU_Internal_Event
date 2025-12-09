@@ -10,7 +10,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
     public interface ISlotService
     {
         SlotDTO? CreateSlot(CreateSlotRequest request);
-
+        SlotDTO? GetSlotById(int id);
         List<SlotDTO> GetAllSlot();
     }
 }

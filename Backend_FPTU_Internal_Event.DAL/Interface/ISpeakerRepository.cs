@@ -10,6 +10,8 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
     public interface ISpeakerRepository
     {
         Speaker? AddSpeaker(Speaker speaker);
+
+        Speaker? GetSpeakerById(int speakerId);
         List<Speaker> GetAllSpeaker();
         void SaveChanges();
     }

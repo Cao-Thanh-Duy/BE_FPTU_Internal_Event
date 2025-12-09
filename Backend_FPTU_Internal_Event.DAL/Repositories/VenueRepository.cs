@@ -33,5 +33,10 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         {
             _context.SaveChanges();
         }
+
+        public Venue? GetVenueById(int venueId)
+        {
+            return _context.Venues.FirstOrDefault(v => v.VenueId == venueId);
+        }
     }
 }
