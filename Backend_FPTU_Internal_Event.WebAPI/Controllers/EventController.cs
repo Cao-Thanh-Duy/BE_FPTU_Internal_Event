@@ -165,5 +165,77 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 });
             }
         }
+
+
+        [HttpPut("/Approve")]
+        public IActionResult ApproveEvent(int eventId)
+        {
+            try
+            {
+                var result = _eventService.ApproveEvent(eventId);
+                if (result == true)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Approve Event Successfully ",
+                        data = result
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Failed to Approve Event"
+
+
+                    });
+
+                }
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+        }
+
+        [HttpPut("/Reject")]
+        public IActionResult RejectEvent(int eventId)
+        {
+            try
+            {
+                var result = _eventService.RejectEvent(eventId);
+                if(result == true)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Reject Event Successfully ",
+                        data = result
+                    });
+
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Failed to Reject Event"
+                    });
+                }
+            }catch(KeyNotFoundException knfEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+        }
     }
 }

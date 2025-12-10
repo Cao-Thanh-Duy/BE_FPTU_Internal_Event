@@ -13,5 +13,9 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         Venue? AddVenue(Venue venue);
         Venue? GetVenueById(int venueId);
         void SaveChanges();
+
+        bool CheckExitVenueInEvent(int venueId);
+
+        bool DeleteVenue(int venueId);
     }
 }

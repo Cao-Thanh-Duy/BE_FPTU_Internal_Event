@@ -40,6 +40,19 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             };
         }
 
+        public bool DeleteVenue(int VenueId)
+        {
+            if(_venueRepository.CheckExitVenueInEvent(VenueId) == true)
+            {
+                return false;
+            }
+            else
+            {
+                var venue = _venueRepository.DeleteVenue(VenueId);
+                return true;
+            }
+        }
+
         public List<VenueDTO> GetAllVenue()
         {
             List<VenueDTO> listVenueDTO = new();

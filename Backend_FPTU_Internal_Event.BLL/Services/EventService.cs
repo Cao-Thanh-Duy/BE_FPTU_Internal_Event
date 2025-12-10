@@ -144,7 +144,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             }
             List<SpeakerEventDTO> speakerEventDTOs = new();
             var speakerEvent = _eventRepository.GetAllSpeakerEvents(eventEntity.EventId);
-            foreach(var speaker in speakerEvent)
+            foreach (var speaker in speakerEvent)
             {
                 var spearkerdto = _speakerRepository.GetSpeakerById(speaker.SpeakerId);
                 SpeakerEventDTO speakerEventDTO = new() { SpeakerDescription = spearkerdto.SpeakerDescription, SpeakerName = spearkerdto.SpeakerName };
@@ -165,6 +165,42 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 SpeakerEvent = speakerEventDTOs
 
             };
+        }
+
+        public bool ApproveEvent(int eventId)
+        {
+            var eventApprove = _eventRepository.GetEventById(eventId);
+
+            if (eventApprove == null)
+            {
+             
+                throw new KeyNotFoundException($"Event Id {eventId} do not exist");
+            }
+            else
+            {
+                var status = "Approve";
+                eventApprove.Status = status;
+                _eventRepository.SaveChanges();
+            }
+            return true;
+        }
+
+        public bool RejectEvent(int enentId)
+        {
+            var eventReject = _eventRepository.GetEventById(enentId);
+            if(eventReject == null)
+            {
+                
+                throw new KeyNotFoundException($"Event Id {enentId} do not exist");
+        
+            }
+            else
+            {
+                var status = "Reject";
+                eventReject.Status = status;
+                _eventRepository.SaveChanges();
+            }
+            return true;
         }
     }
 }

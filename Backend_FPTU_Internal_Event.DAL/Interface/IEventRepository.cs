@@ -18,5 +18,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         List<EventSchedule> GetAllEventSchedules(int eventId);
         List<SpeakerEvent> GetAllSpeakerEvents(int eventId);
         void SaveChanges();
+
+        
     }
 }

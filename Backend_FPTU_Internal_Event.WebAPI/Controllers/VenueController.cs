@@ -116,6 +116,39 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+        [HttpDelete]
+        public IActionResult DeleteVenue(int venueId)
+        {
+            try
+            {
+                var result = _venueService.DeleteVenue(venueId);
+                if(result == true)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Delete Venue Successfully",
+                        data = result
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Venue being used in the Event",
+                      
+                    });
+                }
+            }catch(Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
 
     }
 }

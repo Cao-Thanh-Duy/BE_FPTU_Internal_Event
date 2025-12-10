@@ -38,5 +38,27 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         {
             return _context.Venues.FirstOrDefault(v => v.VenueId == venueId);
         }
+
+        public bool CheckExitVenueInEvent(int venueId)
+        {
+            var loadVenue = _context.Events.Find(venueId);
+            if (loadVenue != null)
+            {
+                return true;
+            }
+            else return false;
+        }
+
+        public bool DeleteVenue(int venueId)
+        {
+            var loadVenue = _context.Venues.Find(venueId);
+            if (loadVenue != null)
+            {
+                _context.Venues.Remove(loadVenue);
+                _context.SaveChanges();
+                return true;
+            }
+            else return false;
+        }
     }
 }
