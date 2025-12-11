@@ -65,7 +65,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 EventDescription = request.EventDescription,
                 EventDate = request.EventDate,
                 MaxTicketCount = request.MaxTicketCount,
-                CurrentTicketCount = 0,
+                CurrentTicketCount = request.MaxTicketCount,
                 Status = "Pending",
                 UserId = organizerId,
                 VenueId = request.VenueId

@@ -9,7 +9,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Entities
     public class Ticket
     {
         public int TicketId { get; set; }
-        public int TichketCode { get; set; }
+        public Guid TicketCode { get; set; }
         public int SeetNumber { get; set; }
         public string Status { get; set; } = string.Empty;
 
