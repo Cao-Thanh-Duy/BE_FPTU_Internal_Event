@@ -175,7 +175,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     return BadRequest(new
                     {
                         success = false,
-                        message = $"This ticket already Cancelled.",
+                        message = $"This ticket can not Cancelled.",
                     });
                 }
 

@@ -87,5 +87,22 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 LocationDetails = venue.LocationDetails
             };
         }
+
+        public VenueDTO? UpdateVenue(int venueId, CreateUpdateVenueRequest request)
+        {
+            var venue = _venueRepository.GetVenueById(venueId) ?? throw new Exception("Venue do not exist");
+            venue.VenueName = request.VenueName;
+            venue.MaxSeat = request.MaxSeat;
+            venue.LocationDetails = request.LocationDetails;
+
+            _venueRepository.SaveChanges();
+            return new VenueDTO
+            {
+                VenueId = venue.VenueId,
+                VenueName = request.VenueName,
+                MaxSeat = request.MaxSeat,
+                LocationDetails = request.LocationDetails
+            };
+        }
     }
 }

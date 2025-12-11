@@ -1,6 +1,7 @@
 ﻿using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.BLL.Services;
+using Backend_FPTU_Internal_Event.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,8 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 var result = _speakerService.CreateSpeaker(request);
                 if (result != null)
                 {
-                    return Ok(new {
+                    return Ok(new
+                    {
 
                         success = true,
                         message = "Create Speaker Successfully.",
@@ -42,7 +44,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     {
                         success = false,
                         message = "Internal Server.",
-                        
+
                     });
                 }
 
@@ -74,7 +76,8 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 });
 
 
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
@@ -159,5 +162,44 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 });
             }
         }
+
+        [HttpPut]
+        public IActionResult UpdateSpeaker([FromQuery] int speakerId, [FromBody] UpdateSpeakerRequest request)
+        {
+            try
+            {
+                var result = _speakerService.UpdateSpeaker(speakerId, request);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Update Speaker successfully ",
+                        data = result
+                    });
+
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Internal server"
+
+
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    detail = ex.Message
+                });
+            }
+
+
         }
     }
+}

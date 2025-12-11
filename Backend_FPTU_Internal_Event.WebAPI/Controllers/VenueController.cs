@@ -1,6 +1,7 @@
 ﻿using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.BLL.Services;
+using Backend_FPTU_Internal_Event.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -148,6 +149,55 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     message = ex.Message
                 });
             }
+        }
+
+        [HttpPut]
+        public IActionResult UpdateVenue(int venueId,[FromBody] CreateUpdateVenueRequest request)
+        {
+            try
+            {
+                var result = _venueService.UpdateVenue(venueId, request);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Update Venue successfully ",
+                        data = result
+                    });
+
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Internal server"
+
+
+                    });
+                }
+
+            }
+            catch (KeyNotFoundException knx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = knx.Message
+
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+
+                });
+            }
+
         }
 
     }

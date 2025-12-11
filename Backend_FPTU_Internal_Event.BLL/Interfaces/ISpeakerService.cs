@@ -14,5 +14,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
         List<SpeakerDTO> GetAllSpeaker();
 
         bool DeleteSpeaker(int speakerId);
+
+        SpeakerDTO? UpdateSpeaker(int speakerId, UpdateSpeakerRequest request);
     }
 }

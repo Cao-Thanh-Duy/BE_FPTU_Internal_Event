@@ -88,5 +88,23 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 SpeakerDecription = speaker.SpeakerDescription
             };
         }
+
+        public SpeakerDTO? UpdateSpeaker(int speakerId, UpdateSpeakerRequest request)
+        {
+            var speaker = _speakerRepository.GetSpeakerById(speakerId) ?? throw new Exception("Speaker do not exist ");
+
+            speaker.SpeakerId = speakerId;
+            speaker.SpeakerName = request.speakerName;
+            speaker.SpeakerDescription = request.speakerDecripton;
+            _speakerRepository.SaveChanges();
+
+            return new SpeakerDTO
+            {
+                SpeakerId = speakerId,
+                SpeakerName = request.speakerName,
+                SpeakerDecription = request.speakerDecripton
+            };
+           
+        }
     }
 }

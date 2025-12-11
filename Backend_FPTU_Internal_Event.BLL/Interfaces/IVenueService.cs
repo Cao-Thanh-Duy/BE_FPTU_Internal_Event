@@ -15,5 +15,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
         VenueDTO? GetVenueById(int VenueId);
 
         bool DeleteVenue(int  VenueId);
+
+        VenueDTO? UpdateVenue (int venueId, CreateUpdateVenueRequest request);
     }
 }
