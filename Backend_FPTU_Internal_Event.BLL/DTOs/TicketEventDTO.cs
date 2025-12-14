@@ -15,5 +15,6 @@ namespace Backend_FPTU_Internal_Event.BLL.DTOs
         public string EventName { get; set; }
         public DateOnly StartDay { get; set; }
         public string UserName { get; set; }
+      
     }
 }

@@ -22,6 +22,18 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public SlotDTO? CreateSlot(CreateSlotRequest request)
         {
+            // Validate: StartTime phải nhỏ hơn EndTime
+            if (request.StartTime >= request.EndTime)
+            {
+                throw new InvalidOperationException("StartTime must be less than EndTime");
+            }
+
+            // Check trùng slot
+            if (_slotRepository.IsSlotOverlapping(request.StartTime, request.EndTime))
+            {
+                throw new InvalidOperationException($"Slot time ({request.StartTime} - {request.EndTime}) overlaps with an existing slot");
+            }
+
             var newSlot = new Slot
             {
                 SlotName = request.SlotName,
@@ -35,9 +47,9 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
             return new SlotDTO
             {
-               SlotName = newSlot.SlotName,
-               StartTime = newSlot.StartTime,
-               EndTime = newSlot.EndtTime
+                SlotName = newSlot.SlotName,
+                StartTime = newSlot.StartTime,
+                EndTime = newSlot.EndtTime
             };
         }
 

@@ -96,7 +96,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             catch (Exception ex)
             {
                 throw new Exception($"Failed to generate QR code: {ex.Message}", ex);
-            }
+            }   
         }
 
         public List<TicketEventDTO> GetTikets(int userId)
@@ -119,7 +119,8 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                         SeatNumber = ticket.SeetNumber,
                         Status = ticket.Status,
                         TicketCode = ticket.TicketCode,
-                        UserName = user.UserName
+                        UserName = user.UserName,
+                       
                     };
                     listTickets.Add(ticketEventDto);
                 }

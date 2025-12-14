@@ -131,7 +131,8 @@ namespace Backend_FPTU_Internal_Event.DAL.Data
                     .HasForeignKey(e => e.SpeakerId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne<Event>()
+                // Update to use navigation property
+                entity.HasOne(e => e.Event)
                     .WithMany()
                     .HasForeignKey(e => e.EventId)
                     .OnDelete(DeleteBehavior.Restrict);

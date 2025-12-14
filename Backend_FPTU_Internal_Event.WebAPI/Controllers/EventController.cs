@@ -54,8 +54,8 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
       
         [HttpGet("{id}")]
         [SwaggerOperation(
-            Summary = "Get Event by ID",
-            Description = "Retrieve a specific event by its ID"
+            Summary = "Get Event by EventID",
+            Description = "Retrieve a specific event by eventID"
         )]
         public IActionResult GetEventById(int id)
         {
@@ -102,18 +102,6 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         {
             try
             {
-                // Validate model
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Invalid input",
-                        errors = ModelState.Values
-                            .SelectMany(v => v.Errors)
-                            .Select(e => e.ErrorMessage)
-                    });
-                }
 
                 // Get current user ID from JWT token
                 var userIdClaim = User.FindFirst("userId")?.Value;
@@ -153,6 +141,14 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 {
                     success = false,
                     message = knfEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
                 });
             }
             catch (Exception ex)

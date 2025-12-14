@@ -44,6 +44,14 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     });
                 }
             }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
+            }
             catch (Exception ex)
             {
                 {

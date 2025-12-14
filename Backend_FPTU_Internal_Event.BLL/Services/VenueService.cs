@@ -21,6 +21,8 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public VenueDTO? CreateVenue(CreateVenueRequest request)
         {
+
+            //bắt thêm lỗi địa điểm đã tồn tại check name chữ lớn chữ nhỏ 
             var newVenue = new Venue
             {
                 VenueName = request.VenueName,

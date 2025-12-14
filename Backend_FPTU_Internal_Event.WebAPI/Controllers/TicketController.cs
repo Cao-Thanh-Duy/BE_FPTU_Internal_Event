@@ -3,6 +3,7 @@ using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Buffers.Text;
 
 namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
@@ -47,6 +48,10 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
 
 
         [HttpGet]
+        [SwaggerOperation(
+            Summary = "Get ticket by UserId",
+            Description = ""
+        )]
         public IActionResult GetTickets([FromQuery]int userId)
         {
             try

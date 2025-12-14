@@ -51,11 +51,96 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 throw new KeyNotFoundException($"Venue with ID {request.VenueId} not found");
             }
 
+            // Validate MaxTicketCount <= MaxSeat của Venue
+            if (request.MaxTicketCount > venue.MaxSeat)
+            {
+                throw new InvalidOperationException($"MaxTicketCount ({request.MaxTicketCount}) cannot exceed Venue's MaxSeat ({venue.MaxSeat})");
+            }
+
             // Validate User (Organizer) exists
             var organizer = _userRepository.GetUserById(organizerId);
             if (organizer == null)
             {
                 throw new KeyNotFoundException($"User with ID {organizerId} not found");
+            }
+
+            // Validate Slots are not occupied at this venue on this date
+            if (request.SlotIds != null && request.SlotIds.Any())
+            {
+                var occupiedSlots = new List<int>();
+
+                foreach (var slotId in request.SlotIds.Distinct())
+                {
+                    // Check if slot exists
+                    var slot = _slotRepository.GetSlotById(slotId);
+                    if (slot == null)
+                    {
+                        throw new KeyNotFoundException($"Slot with ID {slotId} not found");
+                    }
+
+                    // Check if slot is already occupied
+                    if (_eventRepository.IsSlotOccupied(request.VenueId, request.EventDate, slotId))
+                    {
+                        occupiedSlots.Add(slotId);
+                    }
+                }
+
+                if (occupiedSlots.Any())
+                {
+                    var slotNames = occupiedSlots
+                        .Select(id => _slotRepository.GetSlotById(id)?.SlotName ?? $"Slot {id}")
+                        .ToList();
+
+                    throw new InvalidOperationException(
+                        $"The following slots are already occupied at venue '{venue.VenueName}' on {request.EventDate}: {string.Join(", ", slotNames)}");
+                }
+            }
+
+            // Validate Speakers are not occupied in the same slots on this date
+            if (request.SpeakerIds != null && request.SpeakerIds.Any() &&
+                request.SlotIds != null && request.SlotIds.Any())
+            {
+                var occupiedSpeakerSlots = new Dictionary<int, List<int>>(); // SpeakerId -> List of occupied SlotIds
+
+                foreach (var speakerId in request.SpeakerIds.Distinct())
+                {
+                    // Check if speaker exists
+                    var speaker = _speakerRepository.GetSpeakerById(speakerId);
+                    if (speaker == null)
+                    {
+                        throw new KeyNotFoundException($"Speaker with ID {speakerId} not found");
+                    }
+
+                    var occupiedSlots = new List<int>();
+
+                    // Check each slot for this speaker
+                    foreach (var slotId in request.SlotIds.Distinct())
+                    {
+                        if (_eventRepository.IsSpeakerOccupiedInSlot(speakerId, request.EventDate, slotId))
+                        {
+                            occupiedSlots.Add(slotId);
+                        }
+                    }
+
+                    if (occupiedSlots.Any())
+                    {
+                        occupiedSpeakerSlots[speakerId] = occupiedSlots;
+                    }
+                }
+
+                if (occupiedSpeakerSlots.Any())
+                {
+                    var errorMessages = occupiedSpeakerSlots.Select(kvp =>
+                    {
+                        var speakerName = _speakerRepository.GetSpeakerById(kvp.Key)?.SpeakerName ?? $"Speaker {kvp.Key}";
+                        var slotNames = kvp.Value.Select(slotId =>
+                            _slotRepository.GetSlotById(slotId)?.SlotName ?? $"Slot {slotId}");
+                        return $"{speakerName} is already occupied in: {string.Join(", ", slotNames)}";
+                    });
+
+                    throw new InvalidOperationException(
+                        $"The following speakers have conflicts on {request.EventDate}:\n{string.Join("\n", errorMessages)}");
+                }
             }
 
             // Create Event

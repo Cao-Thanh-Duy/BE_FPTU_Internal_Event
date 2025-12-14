@@ -69,6 +69,25 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         {
             return _context.SpeakerEvents.Where(se =>  se.EventId == eventId).ToList(); 
         }
+        public bool IsSlotOccupied(int venueId, DateOnly eventDate, int slotId)
+        {
+            // Check if there's already an event at this venue on this date with this slot
+            return _context.EventSchedules
+                .Include(es => es.Event)
+                .Any(es =>
+                    es.SlotId == slotId &&
+                    es.Event.VenueId == venueId &&
+                    es.Event.EventDate == eventDate);
+        }
+        public bool IsSpeakerOccupiedInSlot(int speakerId, DateOnly eventDate, int slotId)
+        {
+            // Check if speaker is already assigned to another event on the same date AND same slot
+            return _context.SpeakerEvents
+                .Include(se => se.Event)
+                .Where(se => se.SpeakerId == speakerId && se.Event.EventDate == eventDate)
+                .SelectMany(se => _context.EventSchedules.Where(es => es.EventId == se.EventId))
+                .Any(es => es.SlotId == slotId);
+        }
     }
 
 
