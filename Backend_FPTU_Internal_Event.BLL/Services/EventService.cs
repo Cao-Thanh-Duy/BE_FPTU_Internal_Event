@@ -329,5 +329,26 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             var events = _eventRepository.GetEventsByOrganizerId(organizerId);
             return events.Select(e => MapToDTO(e)).ToList();
         }
+
+        public EventDTO? UpdateEvent(int eventId, CreateUpdateEventRequest request)
+        {
+           var e = _eventRepository.GetEventById(eventId);
+            if(e == null) throw new KeyNotFoundException($"Slot with ID {eventId} not found");
+
+            e.EventName = request.EventName;
+            e.EventDescription = request.EventDecriptions;
+
+            _eventRepository.SaveChanges();
+
+            return new EventDTO
+            {
+                EventName = request.EventName,
+                EventDescription = request.EventDecriptions,
+            };
+
+            
+
+           
+        }
     }
 }

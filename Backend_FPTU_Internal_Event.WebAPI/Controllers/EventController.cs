@@ -1,5 +1,7 @@
 ﻿using Backend_FPTU_Internal_Event.BLL.DTOs;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
+using Backend_FPTU_Internal_Event.BLL.Services;
+using Backend_FPTU_Internal_Event.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -163,11 +165,53 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
 
-        //[HttpPut]
-        //public IActionResult UpdateEvent([FromQuery] int eventId, CreateUpdateEventRequest request)
-        //{
+        [HttpPut]
+        public IActionResult UpdateEvent([FromQuery] int eventId, CreateUpdateEventRequest request)
+        {
+            try
+            {
+                var result = _eventService.UpdateEvent(eventId, request);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Update Event successfully ",
+                        data = result
+                    });
 
-        //}
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Internal server"
+
+
+                    });
+                }
+
+            }
+            catch (KeyNotFoundException knx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = knx.Message
+
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+
+                });
+            }
+        }
 
         [HttpGet("my-events")]
         [SwaggerOperation(
