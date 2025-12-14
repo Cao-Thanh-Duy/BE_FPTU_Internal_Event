@@ -96,5 +96,44 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
             };
         }
+
+        public SlotDTO? UpdateSlot(int slotId, CreateUpdateSlotRequest request)
+        {
+
+
+            // Get existing slot
+            var slot = _slotRepository.GetSlotById(slotId);
+            if (slot == null)
+            {
+                throw new KeyNotFoundException($"Slot with ID {slotId} not found");
+            }
+
+            // Validate: StartTime phải nhỏ hơn EndTime
+            if (request.StartTime >= request.EndTime)
+            {
+                throw new InvalidOperationException("StartTime must be less than EndTime");
+            }
+
+            // Check trùng slot với các slot khác (exclude slot hiện tại)
+            if (_slotRepository.IsSlotOverlappingExcludeCurrent(slotId, request.StartTime, request.EndTime))
+            {
+                throw new InvalidOperationException($"Updated slot time ({request.StartTime} - {request.EndTime}) overlaps with another existing slot");
+            }
+
+            // Update slot properties
+            slot.SlotName = request.SlotName;
+            slot.StartTime = request.StartTime;
+            slot.EndtTime = request.EndTime;
+
+            _slotRepository.SaveChanges();
+
+            return new SlotDTO
+            {
+                SlotId = slot.SlotId,
+                SlotName = slot.SlotName,
+                StartTime = slot.StartTime,
+                EndTime = slot.EndtTime
+            };
+        }
     }
 }

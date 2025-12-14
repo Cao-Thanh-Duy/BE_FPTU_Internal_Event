@@ -12,7 +12,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
         List<EventDTO> GetAllEvents();
         EventDTO? GetEventById(int eventId);
         EventDTO? CreateEvent(CreateEventRequest request, int organizerId);
-
+        List<EventDTO> GetEventsByOrganizerId(int organizerId);
         bool ApproveEvent(int eventId);
 
         bool RejectEvent(int enentId);

@@ -16,6 +16,6 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
 
         bool DeleteSlot(int slotId);
         bool IsSlotOverlapping(TimeOnly startTime, TimeOnly endTime);
-
+        bool IsSlotOverlappingExcludeCurrent(int currentSlotId, TimeOnly startTime, TimeOnly endTime);
     }
 }

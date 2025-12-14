@@ -59,5 +59,17 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
                 (startTime <= s.StartTime && endTime >= s.EndtTime)      // Slot mới bao trùm slot hiện có
             );
         }
+
+        public bool IsSlotOverlappingExcludeCurrent(int currentSlotId, TimeOnly startTime, TimeOnly endTime)
+        {
+            return _context.Slots
+                 .Where(s => s.SlotId != currentSlotId) // Exclude current slot being updated
+                 .Any(s =>
+                     // Check if updated slot overlaps with other existing slots
+                     (startTime >= s.StartTime && startTime < s.EndtTime) ||  // StartTime nằm trong slot khác
+                     (endTime > s.StartTime && endTime <= s.EndtTime) ||      // EndTime nằm trong slot khác
+                     (startTime <= s.StartTime && endTime >= s.EndtTime)      // Slot update bao trùm slot khác
+                 );
+        }
     }
 }

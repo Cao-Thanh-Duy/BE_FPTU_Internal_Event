@@ -126,6 +126,58 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+        [HttpPut]
+        public IActionResult UpdateSlot([FromQuery] int slotId, [FromBody] CreateUpdateSlotRequest request)
+        {
+            try
+            {
+                var result = _slotService.UpdateSlot(slotId, request);
+                if (result != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Slot updated successfully",
+                        data = result
+                    });
+
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Failed to update Slot"
+                    });
+                }
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
 
         [HttpDelete]
         public IActionResult DeleteSlot([FromQuery] int slotId)

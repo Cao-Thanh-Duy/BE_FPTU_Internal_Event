@@ -57,11 +57,47 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 throw new InvalidOperationException($"MaxTicketCount ({request.MaxTicketCount}) cannot exceed Venue's MaxSeat ({venue.MaxSeat})");
             }
 
+            // Validate EventDate is not in the past
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            if (request.EventDate < today)
+            {
+                throw new InvalidOperationException($"EventDate ({request.EventDate}) cannot be in the past. Event must be scheduled for today or a future date.");
+            }
+
+
             // Validate User (Organizer) exists
             var organizer = _userRepository.GetUserById(organizerId);
             if (organizer == null)
             {
                 throw new KeyNotFoundException($"User with ID {organizerId} not found");
+            }
+
+            // Validate Slots are not in the past (if event is today)
+            if (request.EventDate == today && request.SlotIds != null && request.SlotIds.Any())
+            {
+                var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+                var pastSlots = new List<string>();
+
+                foreach (var slotId in request.SlotIds.Distinct())
+                {
+                    var slot = _slotRepository.GetSlotById(slotId);
+                    if (slot == null)
+                    {
+                        throw new KeyNotFoundException($"Slot with ID {slotId} not found");
+                    }
+
+                    // Check if slot's start time has already passed
+                    if (slot.StartTime <= currentTime)
+                    {
+                        pastSlots.Add($"{slot.SlotName} (starts at {slot.StartTime} - end at {slot.EndtTime} )");
+                    }
+                }
+
+                if (pastSlots.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot schedule event for today with slots that have already started or passed. Current time: {currentTime:HH:mm}. Past slots: {string.Join(", ", pastSlots)}");
+                }
             }
 
             // Validate Slots are not occupied at this venue on this date
@@ -286,6 +322,12 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 _eventRepository.SaveChanges();
             }
             return true;
+        }
+
+        public List<EventDTO> GetEventsByOrganizerId(int organizerId)
+        {
+            var events = _eventRepository.GetEventsByOrganizerId(organizerId);
+            return events.Select(e => MapToDTO(e)).ToList();
         }
     }
 }

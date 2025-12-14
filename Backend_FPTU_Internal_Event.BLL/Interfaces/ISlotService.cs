@@ -14,5 +14,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
         List<SlotDTO> GetAllSlot();
 
         bool DeleteSlot(int slotId);
+
+        SlotDTO? UpdateSlot (int slotId, CreateUpdateSlotRequest request);
     }
 }

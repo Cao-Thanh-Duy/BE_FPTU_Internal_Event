@@ -88,6 +88,16 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
                 .SelectMany(se => _context.EventSchedules.Where(es => es.EventId == se.EventId))
                 .Any(es => es.SlotId == slotId);
         }
+
+        public List<Event> GetEventsByOrganizerId(int organizerId)
+        {
+            return _context.Events
+                .Include(e => e.User)
+                .Include(e => e.Venue)
+                .Where(e => e.UserId == organizerId)
+                .OrderByDescending(e => e.EventDate)
+                .ToList();
+        }
     }
 
 

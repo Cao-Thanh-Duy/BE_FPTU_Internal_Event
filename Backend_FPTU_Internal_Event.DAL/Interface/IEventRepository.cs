@@ -20,6 +20,6 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         void SaveChanges();
         bool IsSlotOccupied(int venueId, DateOnly eventDate, int slotId);
         bool IsSpeakerOccupiedInSlot(int speakerId, DateOnly eventDate, int slotId);
-
+        List<Event> GetEventsByOrganizerId(int organizerId);
     }
 }

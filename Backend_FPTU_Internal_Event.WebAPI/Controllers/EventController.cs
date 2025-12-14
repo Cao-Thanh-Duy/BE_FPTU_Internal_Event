@@ -163,6 +163,46 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
 
+        //[HttpPut]
+        //public IActionResult UpdateEvent([FromQuery] int eventId, CreateUpdateEventRequest request)
+        //{
+
+        //}
+
+        [HttpGet("my-events")]
+        [SwaggerOperation(
+            Summary = "Get My Created Events",
+         Description = "Retrieve all events created by  (EventOrg/Admin)"
+         )]
+        public IActionResult GetEventsByOrganizerId(int organizerId)
+        {
+            try
+            {
+               
+
+                var result = _eventService.GetEventsByOrganizerId(organizerId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Retrieved {result.Count} events created by you",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
+
+
+
         [HttpPut("/Approve")]
         public IActionResult ApproveEvent(int eventId)
         {
