@@ -244,6 +244,35 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+        [HttpGet("staff-events")]
+        [SwaggerOperation(
+             Summary = "Get Staff Assigned Events",
+             Description = "Retrieve all events where the user is assigned as staff"
+         )]
+        public IActionResult GetStaffEventByUserId([FromQuery] int userId)
+        {
+            try
+            {
+                var result = _eventService.GetEventsByStaffId(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Retrieved {result.Count} events where you are assigned as staff",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
 
 
 

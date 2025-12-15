@@ -98,6 +98,19 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
                 .OrderByDescending(e => e.EventDate)
                 .ToList();
         }
+
+        public List<Event> GetEventsByStaffId(int staffId)
+        {
+            return _context.StaffEvents
+             .Include(se => se.Event)
+                 .ThenInclude(e => e.User)
+             .Include(se => se.Event)
+                 .ThenInclude(e => e.Venue)
+             .Where(se => se.UserId == staffId)
+             .Select(se => se.Event)
+             .OrderByDescending(e => e.EventDate)
+             .ToList();
+        }
     }
 
 

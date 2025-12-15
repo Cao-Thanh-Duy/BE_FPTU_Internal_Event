@@ -350,5 +350,11 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
            
         }
+
+        public List<EventDTO> GetEventsByStaffId(int staffId)
+        {
+            var events = _eventRepository.GetEventsByStaffId(staffId);
+            return events.Select(e => MapToDTO(e)).ToList();
+        }
     }
 }

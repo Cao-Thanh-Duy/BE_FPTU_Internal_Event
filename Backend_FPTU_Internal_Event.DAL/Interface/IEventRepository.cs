@@ -21,5 +21,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         bool IsSlotOccupied(int venueId, DateOnly eventDate, int slotId);
         bool IsSpeakerOccupiedInSlot(int speakerId, DateOnly eventDate, int slotId);
         List<Event> GetEventsByOrganizerId(int organizerId);
+
+        List<Event> GetEventsByStaffId(int staffId);
     }
 }
