@@ -102,14 +102,77 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         public List<Event> GetEventsByStaffId(int staffId)
         {
             return _context.StaffEvents
-             .Include(se => se.Event)
-                 .ThenInclude(e => e.User)
-             .Include(se => se.Event)
-                 .ThenInclude(e => e.Venue)
-             .Where(se => se.UserId == staffId)
-             .Select(se => se.Event)
-             .OrderByDescending(e => e.EventDate)
-             .ToList();
+                     .Include(se => se.Event)
+                         .ThenInclude(e => e.User)
+                     .Include(se => se.Event)
+                         .ThenInclude(e => e.Venue)
+                     .Where(se => se.UserId == staffId)
+                     .Select(se => se.Event)
+                     .OrderByDescending(e => e.EventDate)
+                     .ToList();
+        }
+
+        public bool IsStaffOccupiedInSlot(int staffId, DateOnly eventDate, int slotId)
+        {
+            // Check if staff is already assigned to another event on the same date AND same slot
+            return _context.StaffEvents
+                .Include(se => se.Event)
+                .Where(se => se.UserId == staffId && se.Event.EventDate == eventDate)
+                .SelectMany(se => _context.EventSchedules.Where(es => es.EventId == se.EventId))
+                .Any(es => es.SlotId == slotId);
+        }
+
+        public void RemoveSpeakerEvent(SpeakerEvent speakerEvent)
+        {
+            _context.SpeakerEvents.Remove(speakerEvent);
+        }
+
+        public void RemoveEventSchedule(EventSchedule eventSchedule)
+        {
+            _context.EventSchedules.Remove(eventSchedule);
+        }
+
+        public void RemoveStaffEvent(StaffEvent staffEvent)
+        {
+            _context.StaffEvents.Remove(staffEvent);
+        }
+
+        public List<StaffEvent> GetAllStaffEvents(int eventId)
+        {
+            return _context.StaffEvents.Where(se => se.EventId == eventId).ToList();
+        }
+
+        public bool IsSlotOccupiedExcludeEvent(int venueId, DateOnly eventDate, int slotId, int excludeEventId)
+        {
+            return _context.EventSchedules
+                .Include(es => es.Event)
+                .Any(es =>
+                    es.SlotId == slotId &&
+                    es.Event.VenueId == venueId &&
+                    es.Event.EventDate == eventDate &&
+                    es.EventId != excludeEventId);
+        }
+
+        public bool IsSpeakerOccupiedInSlotExcludeEvent(int speakerId, DateOnly eventDate, int slotId, int excludeEventId)
+        {
+            return _context.SpeakerEvents
+                .Include(se => se.Event)
+                .Where(se => se.SpeakerId == speakerId &&
+                            se.Event.EventDate == eventDate &&
+                            se.EventId != excludeEventId)
+                .SelectMany(se => _context.EventSchedules.Where(es => es.EventId == se.EventId))
+                .Any(es => es.SlotId == slotId);
+        }
+
+        public bool IsStaffOccupiedInSlotExcludeEvent(int staffId, DateOnly eventDate, int slotId, int excludeEventId)
+        {
+            return _context.StaffEvents
+                .Include(se => se.Event)
+                .Where(se => se.UserId == staffId &&
+                            se.Event.EventDate == eventDate &&
+                            se.EventId != excludeEventId)
+                .SelectMany(se => _context.EventSchedules.Where(es => es.EventId == se.EventId))
+                .Any(es => es.SlotId == slotId);
         }
     }
 

@@ -166,7 +166,11 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
 
 
         [HttpPut]
-        public IActionResult UpdateEvent([FromQuery] int eventId, CreateUpdateEventRequest request)
+        [SwaggerOperation(
+             Summary = "Update Event",
+             Description = "Update an existing event. Must be done at least 2 days before the event starts. After update, status will be set to Pending for re-approval."
+        )]
+        public IActionResult UpdateEvent([FromQuery] int eventId, [FromBody] CreateUpdateEventRequest request)
         {
             try
             {
@@ -176,39 +180,42 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     return Ok(new
                     {
                         success = true,
-                        message = "Update Event successfully ",
+                        message = "Event updated successfully. Status set to Pending for admin approval.",
                         data = result
                     });
-
                 }
                 else
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Internal server"
-
-
+                        message = "Failed to update event"
                     });
                 }
-
             }
-            catch (KeyNotFoundException knx)
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
             {
                 return BadRequest(new
                 {
                     success = false,
-                    message = knx.Message
-
+                    message = ioEx.Message
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new
+                return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message
-
+                    message = "Internal server error",
+                    detail = ex.Message
                 });
             }
         }

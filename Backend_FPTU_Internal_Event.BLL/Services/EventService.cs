@@ -179,6 +179,53 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 }
             }
 
+            // Validate Staff are not occupied in the same slots on this date
+            if (request.StaffIds != null && request.StaffIds.Any() &&
+                request.SlotIds != null && request.SlotIds.Any())
+            {
+                var occupiedStaffSlots = new Dictionary<int, List<int>>(); // StaffId -> List of occupied SlotIds
+
+                foreach (var staffId in request.StaffIds.Distinct())
+                {
+                    // Check if staff exists
+                    var staff = _userRepository.GetUserById(staffId);
+                    if (staff == null)
+                    {
+                        throw new KeyNotFoundException($"Staff with ID {staffId} not found");
+                    }
+
+                    var occupiedSlots = new List<int>();
+
+                    // Check each slot for this staff
+                    foreach (var slotId in request.SlotIds.Distinct())
+                    {
+                        if (_eventRepository.IsStaffOccupiedInSlot(staffId, request.EventDate, slotId))
+                        {
+                            occupiedSlots.Add(slotId);
+                        }
+                    }
+
+                    if (occupiedSlots.Any())
+                    {
+                        occupiedStaffSlots[staffId] = occupiedSlots;
+                    }
+                }
+
+                if (occupiedStaffSlots.Any())
+                {
+                    var errorMessages = occupiedStaffSlots.Select(kvp =>
+                    {
+                        var staffName = _userRepository.GetUserById(kvp.Key)?.UserName ?? $"Staff {kvp.Key}";
+                        var slotNames = kvp.Value.Select(slotId =>
+                            _slotRepository.GetSlotById(slotId)?.SlotName ?? $"Slot {slotId}");
+                        return $"{staffName} is already occupied in: {string.Join(", ", slotNames)}";
+                    });
+
+                    throw new InvalidOperationException(
+                        $"The following staff members have conflicts on {request.EventDate}:\n{string.Join("\n", errorMessages)}");
+                }
+            }
+
             // Create Event
             var newEvent = new Event
             {
@@ -332,23 +379,361 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public EventDTO? UpdateEvent(int eventId, CreateUpdateEventRequest request)
         {
-           var e = _eventRepository.GetEventById(eventId);
-            if(e == null) throw new KeyNotFoundException($"Slot with ID {eventId} not found");
+            // Get existing event
+            var existingEvent = _eventRepository.GetEventById(eventId);
+            if (existingEvent == null)
+            {
+                throw new KeyNotFoundException($"Event with ID {eventId} not found");
+            }
 
-            e.EventName = request.EventName;
-            e.EventDescription = request.EventDecriptions;
+            // Check if event can be updated (must be at least 2 days before event starts)
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var eventDate = request.EventDate ?? existingEvent.EventDate;
+            var daysUntilEvent = eventDate.DayNumber - today.DayNumber;
+
+            if (daysUntilEvent < 2)
+            {
+                throw new InvalidOperationException($"Cannot update event. Updates must be made at least 2 days before the event date. Event date: {eventDate}, Current date: {today}");
+            }
+
+            // Validate EventDate if provided
+            if (request.EventDate.HasValue)
+            {
+                if (request.EventDate.Value < today)
+                {
+                    throw new InvalidOperationException($"EventDate ({request.EventDate.Value}) cannot be in the past. Event must be scheduled for today or a future date.");
+                }
+
+                // Validate Slots are not in the past (if event is today)
+                if (request.EventDate.Value == today && request.SlotIds != null && request.SlotIds.Any())
+                {
+                    var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+                    var pastSlots = new List<string>();
+
+                    foreach (var slotId in request.SlotIds.Distinct())
+                    {
+                        var slot = _slotRepository.GetSlotById(slotId);
+                        if (slot == null)
+                        {
+                            throw new KeyNotFoundException($"Slot with ID {slotId} not found");
+                        }
+
+                        if (slot.StartTime <= currentTime)
+                        {
+                            pastSlots.Add($"{slot.SlotName} (starts at {slot.StartTime} - ends at {slot.EndtTime})");
+                        }
+                    }
+
+                    if (pastSlots.Any())
+                    {
+                        throw new InvalidOperationException(
+                            $"Cannot schedule event for today with slots that have already started or passed. Current time: {currentTime:HH:mm}. Past slots: {string.Join(", ", pastSlots)}");
+                    }
+                }
+            }
+
+            // Get current venue for comparison
+            var currentVenue = _venueRepository.GetVenueById(existingEvent.VenueId);
+            Venue? newVenue = null;
+
+            // Validate Venue if provided
+            if (request.VenueId.HasValue)
+            {
+                newVenue = _venueRepository.GetVenueById(request.VenueId.Value);
+                if (newVenue == null)
+                {
+                    throw new KeyNotFoundException($"Venue with ID {request.VenueId.Value} not found");
+                }
+
+                // VALIDATION: MaxSeat của venue mới phải >= MaxSeat của venue cũ
+                if (newVenue.MaxSeat < currentVenue.MaxSeat)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot change to new venue. New venue's MaxSeat ({newVenue.MaxSeat}) must be greater than or equal to current venue's MaxSeat ({currentVenue.MaxSeat}) to accommodate existing tickets.");
+                }
+
+                // Validate MaxTicketCount <= MaxSeat của Venue mới
+                var maxTicketCount = request.MaxTicketCount ?? existingEvent.MaxTicketCount;
+                if (maxTicketCount > newVenue.MaxSeat)
+                {
+                    throw new InvalidOperationException($"MaxTicketCount ({maxTicketCount}) cannot exceed new Venue's MaxSeat ({newVenue.MaxSeat})");
+                }
+            }
+
+            // Validate MaxTicketCount if provided (without venue change)
+            if (request.MaxTicketCount.HasValue)
+            {
+                var venueToCheck = newVenue ?? currentVenue;
+
+                if (request.MaxTicketCount.Value > venueToCheck.MaxSeat)
+                {
+                    throw new InvalidOperationException($"MaxTicketCount ({request.MaxTicketCount.Value}) cannot exceed Venue's MaxSeat ({venueToCheck.MaxSeat})");
+                }
+
+                //////////////////////////////////////////////
+                // VALIDATION 1: MaxTicketCount mới phải >= MaxTicketCount cũ
+                if (request.MaxTicketCount.Value < existingEvent.MaxTicketCount)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot reduce MaxTicketCount from {existingEvent.MaxTicketCount} to {request.MaxTicketCount.Value}. MaxTicketCount can only be increased or kept the same.");
+                }
+
+                // VALIDATION 2: Không cho giảm MaxTicketCount xuống thấp hơn số ticket đã bán (redundant check nhưng để rõ ràng)
+                var ticketsSold = existingEvent.MaxTicketCount - existingEvent.CurrentTicketCount;
+                if (request.MaxTicketCount.Value < ticketsSold)
+                {
+                    throw new InvalidOperationException($"Cannot reduce MaxTicketCount to {request.MaxTicketCount.Value}. Already sold {ticketsSold} tickets.");
+                }
+
+
+
+
+
+
+
+
+            }
+
+            // Validate Slots if provided
+            if (request.SlotIds != null && request.SlotIds.Any())
+            {
+                var venueId = request.VenueId ?? existingEvent.VenueId;
+                var occupiedSlots = new List<int>();
+
+                foreach (var slotId in request.SlotIds.Distinct())
+                {
+                    var slot = _slotRepository.GetSlotById(slotId);
+                    if (slot == null)
+                    {
+                        throw new KeyNotFoundException($"Slot with ID {slotId} not found");
+                    }
+
+                    // Check if slot is already occupied by OTHER events (exclude current event)
+                    var isOccupied = _eventRepository.IsSlotOccupiedExcludeEvent(venueId, eventDate, slotId, eventId);
+                    if (isOccupied)
+                    {
+                        occupiedSlots.Add(slotId);
+                    }
+                }
+
+                if (occupiedSlots.Any())
+                {
+                    var venue = _venueRepository.GetVenueById(venueId);
+                    var slotNames = occupiedSlots
+                        .Select(id => _slotRepository.GetSlotById(id)?.SlotName ?? $"Slot {id}")
+                        .ToList();
+
+                    throw new InvalidOperationException(
+                        $"The following slots are already occupied at venue '{venue.VenueName}' on {eventDate}: {string.Join(", ", slotNames)}");
+                }
+            }
+
+            // Validate Speakers if provided
+            if (request.SpeakerIds != null && request.SpeakerIds.Any())
+            {
+                var slotIds = request.SlotIds ??
+                             _eventRepository.GetAllEventSchedules(eventId).Select(es => es.SlotId).ToList();
+
+                if (slotIds.Any())
+                {
+                    var occupiedSpeakerSlots = new Dictionary<int, List<int>>();
+
+                    foreach (var speakerId in request.SpeakerIds.Distinct())
+                    {
+                        var speaker = _speakerRepository.GetSpeakerById(speakerId);
+                        if (speaker == null)
+                        {
+                            throw new KeyNotFoundException($"Speaker with ID {speakerId} not found");
+                        }
+
+                        var occupiedSlots = new List<int>();
+
+                        foreach (var slotId in slotIds.Distinct())
+                        {
+                            // Check if speaker is occupied, excluding current event
+                            var isOccupied = _eventRepository.IsSpeakerOccupiedInSlotExcludeEvent(speakerId, eventDate, slotId, eventId);
+                            if (isOccupied)
+                            {
+                                occupiedSlots.Add(slotId);
+                            }
+                        }
+
+                        if (occupiedSlots.Any())
+                        {
+                            occupiedSpeakerSlots[speakerId] = occupiedSlots;
+                        }
+                    }
+
+                    if (occupiedSpeakerSlots.Any())
+                    {
+                        var errorMessages = occupiedSpeakerSlots.Select(kvp =>
+                        {
+                            var speakerName = _speakerRepository.GetSpeakerById(kvp.Key)?.SpeakerName ?? $"Speaker {kvp.Key}";
+                            var slotNames = kvp.Value.Select(slotId =>
+                                _slotRepository.GetSlotById(slotId)?.SlotName ?? $"Slot {slotId}");
+                            return $"{speakerName} is already occupied in: {string.Join(", ", slotNames)}";
+                        });
+
+                        throw new InvalidOperationException(
+                            $"The following speakers have conflicts on {eventDate}:\n{string.Join("\n", errorMessages)}");
+                    }
+                }
+            }
+
+            // Validate Staff if provided
+            if (request.StaffIds != null && request.StaffIds.Any())
+            {
+                var slotIds = request.SlotIds ??
+                             _eventRepository.GetAllEventSchedules(eventId).Select(es => es.SlotId).ToList();
+
+                if (slotIds.Any())
+                {
+                    var occupiedStaffSlots = new Dictionary<int, List<int>>();
+
+                    foreach (var staffId in request.StaffIds.Distinct())
+                    {
+                        var staff = _userRepository.GetUserById(staffId);
+                        if (staff == null)
+                        {
+                            throw new KeyNotFoundException($"Staff with ID {staffId} not found");
+                        }
+
+                        var occupiedSlots = new List<int>();
+
+                        foreach (var slotId in slotIds.Distinct())
+                        {
+                            // Check if staff is occupied, excluding current event
+                            var isOccupied = _eventRepository.IsStaffOccupiedInSlotExcludeEvent(staffId, eventDate, slotId, eventId);
+                            if (isOccupied)
+                            {
+                                occupiedSlots.Add(slotId);
+                            }
+                        }
+
+                        if (occupiedSlots.Any())
+                        {
+                            occupiedStaffSlots[staffId] = occupiedSlots;
+                        }
+                    }
+
+                    if (occupiedStaffSlots.Any())
+                    {
+                        var errorMessages = occupiedStaffSlots.Select(kvp =>
+                        {
+                            var staffName = _userRepository.GetUserById(kvp.Key)?.UserName ?? $"Staff {kvp.Key}";
+                            var slotNames = kvp.Value.Select(slotId =>
+                                _slotRepository.GetSlotById(slotId)?.SlotName ?? $"Slot {slotId}");
+                            return $"{staffName} is already occupied in: {string.Join(", ", slotNames)}";
+                        });
+
+                        throw new InvalidOperationException(
+                            $"The following staff members have conflicts on {eventDate}:\n{string.Join("\n", errorMessages)}");
+                    }
+                }
+            }
+
+            // Update basic event properties
+            existingEvent.EventName = request.EventName;
+            existingEvent.EventDescription = request.EventDescription;
+
+            if (request.EventDate.HasValue)
+                existingEvent.EventDate = request.EventDate.Value;
+
+            // Update VenueId if provided and validated
+            if (request.VenueId.HasValue)
+                existingEvent.VenueId = request.VenueId.Value;
+
+            if (request.MaxTicketCount.HasValue)
+            {
+                // Adjust CurrentTicketCount if MaxTicketCount changes
+                var difference = request.MaxTicketCount.Value - existingEvent.MaxTicketCount;
+                existingEvent.MaxTicketCount = request.MaxTicketCount.Value;
+                existingEvent.CurrentTicketCount += difference;
+            }
+
+            // Set status back to Pending for re-approval
+            existingEvent.Status = "Pending";
+
+            // Update Speakers if provided
+            if (request.SpeakerIds != null)
+            {
+                // Remove existing speakers
+                var existingSpeakers = _eventRepository.GetAllSpeakerEvents(eventId);
+                foreach (var se in existingSpeakers)
+                {
+                    _eventRepository.RemoveSpeakerEvent(se);
+                }
+
+                // Add new speakers
+                foreach (var speakerId in request.SpeakerIds.Distinct())
+                {
+                    var speaker = _speakerRepository.GetSpeakerById(speakerId);
+                    if (speaker != null)
+                    {
+                        _eventRepository.AddSpeakerEvent(new SpeakerEvent
+                        {
+                            EventId = eventId,
+                            SpeakerId = speakerId
+                        });
+                    }
+                }
+            }
+
+            // Update Slots if provided
+            if (request.SlotIds != null)
+            {
+                // Remove existing slots
+                var existingSlots = _eventRepository.GetAllEventSchedules(eventId);
+                foreach (var es in existingSlots)
+                {
+                    _eventRepository.RemoveEventSchedule(es);
+                }
+
+                // Add new slots
+                foreach (var slotId in request.SlotIds.Distinct())
+                {
+                    var slot = _slotRepository.GetSlotById(slotId);
+                    if (slot != null)
+                    {
+                        _eventRepository.AddEventSchedule(new EventSchedule
+                        {
+                            EventId = eventId,
+                            SlotId = slotId
+                        });
+                    }
+                }
+            }
+
+            // Update Staff if provided
+            if (request.StaffIds != null)
+            {
+                // Remove existing staff
+                var existingStaff = _eventRepository.GetAllStaffEvents(eventId);
+                foreach (var se in existingStaff)
+                {
+                    _eventRepository.RemoveStaffEvent(se);
+                }
+
+                // Add new staff
+                foreach (var staffId in request.StaffIds.Distinct())
+                {
+                    var staff = _userRepository.GetUserById(staffId);
+                    if (staff != null)
+                    {
+                        _eventRepository.AddStaffEvent(new StaffEvent
+                        {
+                            EventId = eventId,
+                            UserId = staffId
+                        });
+                    }
+                }
+            }
 
             _eventRepository.SaveChanges();
 
-            return new EventDTO
-            {
-                EventName = request.EventName,
-                EventDescription = request.EventDecriptions,
-            };
-
-            
-
-           
+            // Reload and return updated event
+            var updatedEvent = _eventRepository.GetEventById(eventId);
+            return updatedEvent == null ? null : MapToDTO(updatedEvent);
         }
 
         public List<EventDTO> GetEventsByStaffId(int staffId)

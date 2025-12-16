@@ -8,9 +8,14 @@ namespace Backend_FPTU_Internal_Event.BLL.DTOs
 {
     public class CreateUpdateEventRequest
     {
-        public string EventName { get; set; }
-        public string EventDecriptions { get; set; }
-
+        public string EventName { get; set; } = string.Empty;
+        public string EventDescription { get; set; } = string.Empty;
+        public DateOnly? EventDate { get; set; }
+        public int? VenueId { get; set; }
+        public int? MaxTicketCount { get; set; }
+        public List<int>? SpeakerIds { get; set; }
+        public List<int>? SlotIds { get; set; }
+        public List<int>? StaffIds { get; set; }
 
     }
 }

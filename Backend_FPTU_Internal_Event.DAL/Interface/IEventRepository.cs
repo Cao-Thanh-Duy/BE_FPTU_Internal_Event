@@ -15,13 +15,20 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         void AddSpeakerEvent(SpeakerEvent speakerEvent);
         void AddEventSchedule(EventSchedule eventSchedule);
         void AddStaffEvent(StaffEvent staffEvent);
+        void RemoveSpeakerEvent(SpeakerEvent speakerEvent);
+        void RemoveEventSchedule(EventSchedule eventSchedule);
+        void RemoveStaffEvent(StaffEvent staffEvent);
         List<EventSchedule> GetAllEventSchedules(int eventId);
         List<SpeakerEvent> GetAllSpeakerEvents(int eventId);
+        List<StaffEvent> GetAllStaffEvents(int eventId);
         void SaveChanges();
         bool IsSlotOccupied(int venueId, DateOnly eventDate, int slotId);
+        bool IsSlotOccupiedExcludeEvent(int venueId, DateOnly eventDate, int slotId, int excludeEventId);
         bool IsSpeakerOccupiedInSlot(int speakerId, DateOnly eventDate, int slotId);
+        bool IsSpeakerOccupiedInSlotExcludeEvent(int speakerId, DateOnly eventDate, int slotId, int excludeEventId);
+        bool IsStaffOccupiedInSlot(int staffId, DateOnly eventDate, int slotId);
+        bool IsStaffOccupiedInSlotExcludeEvent(int staffId, DateOnly eventDate, int slotId, int excludeEventId);
         List<Event> GetEventsByOrganizerId(int organizerId);
-
         List<Event> GetEventsByStaffId(int staffId);
     }
 }
