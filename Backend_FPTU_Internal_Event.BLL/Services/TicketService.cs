@@ -60,6 +60,9 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 throw new Exception($"Cannot purchase ticket. Event status is '{e.Status}'. Only approved events allow ticket purchases.");
             }
 
+            // Get next available seat number (tìm ghế trống đầu tiên)
+            int seatNumber = _ticketRepository.GetNextAvailableSeatNumber(request.EventId, e.MaxTicketCount);
+
             // Create new ticket
             var ticket = new Ticket
             {
@@ -67,7 +70,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 EventId = request.EventId,
                 TicketCode = Guid.NewGuid(),
                 Status = "Not Used",
-                SeetNumber = e.MaxTicketCount - e.CurrentTicketCount + 1
+                SeetNumber = seatNumber  // Sử dụng seat number từ logic tìm ghế trống
             };
 
             // Decrease available ticket count

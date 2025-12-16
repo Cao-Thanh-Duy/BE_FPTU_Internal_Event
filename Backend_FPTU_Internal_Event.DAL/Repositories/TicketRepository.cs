@@ -80,5 +80,27 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
                                     t.EventId == eventId &&
                                     t.Status != "Cancelled");
         }
+
+        public int GetNextAvailableSeatNumber(int eventId, int maxTicketCount)
+        {
+            // Lấy tất cả seat numbers đang được sử dụng (chưa bị cancelled)
+            var occupiedSeats = _context.Tickets
+                .Where(t => t.EventId == eventId && t.Status != "Cancelled")
+                .Select(t => t.SeetNumber)
+                .OrderBy(s => s)
+                .ToList();
+
+            // Tìm số ghế trống đầu tiên từ 1 đến MaxTicketCount
+            for (int seatNumber = 1; seatNumber <= maxTicketCount; seatNumber++)
+            {
+                if (!occupiedSeats.Contains(seatNumber))
+                {
+                    return seatNumber;
+                }
+            }
+
+          
+            throw new Exception("No available seat found");
+        }
     }
 }

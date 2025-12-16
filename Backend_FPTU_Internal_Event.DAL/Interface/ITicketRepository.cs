@@ -21,5 +21,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         List<Ticket> GetTicketsByEventId(int eventId);
 
         Ticket? GetActiveTicketByUserAndEvent(int userId, int eventId);
+
+        int GetNextAvailableSeatNumber(int eventId, int maxTicketCount);
     }
 }
