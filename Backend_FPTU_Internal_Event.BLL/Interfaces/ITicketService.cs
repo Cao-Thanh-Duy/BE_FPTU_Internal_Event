@@ -16,5 +16,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
         TicketEventDTO GetTicketByTicketCode(Guid ticketCode);
         bool CheckIn(int ticketId);
         bool Cancelled(int ticketId);
+
+        EventAttendeesResponse GetEventAttendees(int eventId);
     }
 }

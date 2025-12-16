@@ -26,27 +26,41 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public TicketDTO GenerateTicket(GenTicketRequest request)
         {
+            // Validate user exists
             if (!_ticketRepository.UserExists(request.UserId))
             {
-                throw new Exception("User do not exist");
+                throw new Exception("User does not exist");
             }
 
+            // Validate event exists
             if (!_ticketRepository.EventExists(request.EventId))
             {
-                throw new Exception("Event do not exist");
+                throw new Exception("Event does not exist");
             }
 
-            if (_ticketRepository.UserExistsInEvent(request.UserId, request.EventId))
+            // Check if user already has an ACTIVE ticket (Not Used or Checked) for this event
+            var existingActiveTicket = _ticketRepository.GetActiveTicketByUserAndEvent(request.UserId, request.EventId);
+            if (existingActiveTicket != null)
             {
-                throw new Exception("The user has already registered for tickets to this event.");
+                throw new Exception($"You already have a ticket for this event with status '{existingActiveTicket.Status}'. Cannot purchase another ticket.");
             }
+
+            // Get event
             var e = _eventRepository.GetEventById(request.EventId);
 
-            if (e.CurrentTicketCount == 0) 
+            // Check if event has available tickets
+            if (e.CurrentTicketCount == 0)
             {
-                throw new Exception("Full slot");
+                throw new Exception("Full slot - No tickets available");
             }
 
+            // Check if event status is Approved
+            if (e.Status != "Approve")
+            {
+                throw new Exception($"Cannot purchase ticket. Event status is '{e.Status}'. Only approved events allow ticket purchases.");
+            }
+
+            // Create new ticket
             var ticket = new Ticket
             {
                 UserId = request.UserId,
@@ -55,8 +69,12 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 Status = "Not Used",
                 SeetNumber = e.MaxTicketCount - e.CurrentTicketCount + 1
             };
+
+            // Decrease available ticket count
             e.CurrentTicketCount--;
             _eventRepository.SaveChanges();
+
+            // Add ticket to database
             var createdTicket = _ticketRepository.AddTicket(ticket);
 
             return new TicketDTO
@@ -175,13 +193,72 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public bool Cancelled(int ticketId)
         {
-            var ticket = _ticketRepository.GetTicketByTicketId(ticketId) ?? throw new Exception("Ticket do not exits");
-            if (ticket.Status == "Checked" || ticket.Status == "Cancelled") return false;
+            // Get ticket
+            var ticket = _ticketRepository.GetTicketByTicketId(ticketId)
+                ?? throw new Exception("Ticket does not exist");
 
-            var status = "Cancelled";
-            ticket.Status = status;
+            // Check if ticket can be cancelled
+            if (ticket.Status == "Checked")
+            {
+                throw new Exception("Cannot cancel ticket. Ticket has already been checked in.");
+            }
+
+            if (ticket.Status == "Cancelled")
+            {
+                throw new Exception("Ticket has already been cancelled.");
+            }
+
+            // Get event to increase available ticket count
+            var eventEntity = _eventRepository.GetEventById(ticket.EventId);
+            if (eventEntity == null)
+            {
+                throw new Exception("Event not found");
+            }
+
+            // Cancel ticket
+            ticket.Status = "Cancelled";
+
+            // Increase available ticket count back
+            eventEntity.CurrentTicketCount++;
+
+            // Save changes
+            _eventRepository.SaveChanges();
             _ticketRepository.SaveChanges();
+
             return true;
+        }
+
+        public EventAttendeesResponse GetEventAttendees(int eventId)
+        {
+            // Check if event exists
+            var eventEntity = _eventRepository.GetEventById(eventId);
+            if (eventEntity == null)
+            {
+                throw new Exception($"Event with ID {eventId} not found");
+            }
+
+            // Get all tickets for this event
+            var tickets = _ticketRepository.GetTicketsByEventId(eventId);
+
+            // Map to DTOs
+            var attendees = tickets.Select(t => new EventAttendeeDTO
+            {
+                UserId = t.UserId,
+                UserName = t.User?.UserName ?? string.Empty,
+                Email = t.User?.Email ?? string.Empty,
+                TicketId = t.TicketId,
+                TicketCode = t.TicketCode,
+                SeatNumber = t.SeetNumber,
+                Status = t.Status
+            }).ToList();
+
+            return new EventAttendeesResponse
+            {
+                EventId = eventId,
+                EventName = eventEntity.EventName,
+                TotalAttendees = attendees.Count,
+                Attendees = attendees
+            };
         }
     }
 }

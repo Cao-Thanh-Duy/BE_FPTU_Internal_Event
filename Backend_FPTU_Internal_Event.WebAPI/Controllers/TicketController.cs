@@ -195,5 +195,33 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+        [HttpGet("event/{eventId}/attendees")]
+        [SwaggerOperation(
+            Summary = "Get Event Attendees",
+            Description = "Retrieve all users who purchased tickets for a specific event with their ticket details"
+        )]
+        public IActionResult GetEventAttendees(int eventId)
+        {
+            try
+            {
+                var result = _ticketService.GetEventAttendees(eventId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Retrieved {result.TotalAttendees} attendees for event '{result.EventName}'",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
     }
 }

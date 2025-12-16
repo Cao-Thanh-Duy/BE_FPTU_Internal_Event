@@ -17,5 +17,9 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         List<Ticket> GetTicketByUserId(int userId);
         Ticket GetTicketByTicketId(int tiketId);
         Ticket? GetTicketByTicketCode(Guid ticketCode);
+
+        List<Ticket> GetTicketsByEventId(int eventId);
+
+        Ticket? GetActiveTicketByUserAndEvent(int userId, int eventId);
     }
 }

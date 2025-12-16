@@ -1,6 +1,7 @@
 ﻿using Backend_FPTU_Internal_Event.DAL.Data;
 using Backend_FPTU_Internal_Event.DAL.Entities;
 using Backend_FPTU_Internal_Event.DAL.Interface;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +58,27 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+
+        public List<Ticket> GetTicketsByEventId(int eventId)
+        {
+            return _context.Tickets
+         .Include(t => t.User)
+         .Include(t => t.Event)
+         .Where(t => t.EventId == eventId)
+         .OrderBy(t => t.SeetNumber)
+         .ToList();
+        }
+
+        public Ticket? GetActiveTicketByUserAndEvent(int userId, int eventId)
+        {
+            // Lấy ticket của user tại event này, chỉ lấy ticket chưa bị cancelled
+            return _context.Tickets
+                .Include(t => t.User)
+                .Include(t => t.Event)
+                .FirstOrDefault(t => t.UserId == userId &&
+                                    t.EventId == eventId &&
+                                    t.Status != "Cancelled");
         }
     }
 }
