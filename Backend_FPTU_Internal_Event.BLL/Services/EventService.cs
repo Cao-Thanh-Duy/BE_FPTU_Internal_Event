@@ -2,6 +2,7 @@
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.DAL.Entities;
 using Backend_FPTU_Internal_Event.DAL.Interface;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -356,18 +357,42 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
         public bool RejectEvent(int enentId)
         {
             var eventReject = _eventRepository.GetEventById(enentId);
-            if(eventReject == null)
+            if (eventReject == null)
             {
-                
                 throw new KeyNotFoundException($"Event Id {enentId} do not exist");
-        
             }
-            else
+
+            // Set status to Reject
+            eventReject.Status = "Reject";
+
+           
+            //  Remove all relationships
+           
+
+            // 1. Remove all SpeakerEvents (free speakers)
+            var speakerEvents = _eventRepository.GetAllSpeakerEvents(enentId);
+            foreach (var speakerEvent in speakerEvents)
             {
-                var status = "Reject";
-                eventReject.Status = status;
-                _eventRepository.SaveChanges();
+                _eventRepository.RemoveSpeakerEvent(speakerEvent);
             }
+
+            // 2. Remove all EventSchedules (free slots)
+            var eventSchedules = _eventRepository.GetAllEventSchedules(enentId);
+            foreach (var eventSchedule in eventSchedules)
+            {
+                _eventRepository.RemoveEventSchedule(eventSchedule);
+            }
+
+            // 3. Remove all StaffEvents (free staff)
+            var staffEvents = _eventRepository.GetAllStaffEvents(enentId);
+            foreach (var staffEvent in staffEvents)
+            {
+                _eventRepository.RemoveStaffEvent(staffEvent);
+            }
+
+            // Save all changes
+            _eventRepository.SaveChanges();
+
             return true;
         }
 
