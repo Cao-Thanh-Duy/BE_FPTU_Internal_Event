@@ -115,7 +115,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                     }
 
                     // Check if slot is already occupied
-                    if (_eventRepository.IsSlotOccupied(request.VenueId, request.EventDate, slotId))
+                    if (_eventRepository.IsSlotOccupiedExcludeRejected(request.VenueId, request.EventDate, slotId))
                     {
                         occupiedSlots.Add(slotId);
                     }

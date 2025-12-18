@@ -174,6 +174,19 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
                 .SelectMany(se => _context.EventSchedules.Where(es => es.EventId == se.EventId))
                 .Any(es => es.SlotId == slotId);
         }
+
+        public bool IsSlotOccupiedExcludeRejected(int venueId, DateOnly eventDate, int slotId)
+        {
+            // Check if slot is occupied by events that are NOT rejected
+            // Only Pending or Approved events block the slot
+            return _context.EventSchedules
+                .Include(es => es.Event)
+                .Any(es =>
+                    es.SlotId == slotId &&
+                    es.Event.VenueId == venueId &&
+                    es.Event.EventDate == eventDate &&
+                    es.Event.Status != "Reject");  // Exclude rejected events
+        }
     }
 
 

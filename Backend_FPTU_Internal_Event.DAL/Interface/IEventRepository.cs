@@ -30,5 +30,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         bool IsStaffOccupiedInSlotExcludeEvent(int staffId, DateOnly eventDate, int slotId, int excludeEventId);
         List<Event> GetEventsByOrganizerId(int organizerId);
         List<Event> GetEventsByStaffId(int staffId);
+
+        bool IsSlotOccupiedExcludeRejected(int venueId, DateOnly eventDate, int slotId);
     }
 }

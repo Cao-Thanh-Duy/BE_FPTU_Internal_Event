@@ -91,10 +91,10 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
-        
+
         /// Create new event - Admin/Organizer only
-     
-        //[Authorize(Roles = "Admin,Organizer")]
+
+        [Authorize(Roles = "Organizer")]
         [HttpPost]
         [SwaggerOperation(
             Summary = "Create New Event",
@@ -164,7 +164,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Organizer")]
         [HttpPut]
         [SwaggerOperation(
              Summary = "Update Event",
@@ -282,7 +282,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
 
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("/Approve")]
         public IActionResult ApproveEvent(int eventId)
         {
@@ -320,6 +320,8 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+
+        [Authorize(Roles = "Admin")]
         [HttpPut("/Reject")]
         public IActionResult RejectEvent(int eventId)
         {
