@@ -18,5 +18,11 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         void SaveChanges();
 
         bool DeleteUser(int userId);
+
+       
+        bool EmailExists(string email);
+        bool EmailExistsExcludeUser(string email, int excludeUserId);
+        Role? GetRoleById(int roleId);
+       
     }
 }

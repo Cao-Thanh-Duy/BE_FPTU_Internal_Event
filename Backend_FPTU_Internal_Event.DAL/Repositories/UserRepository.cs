@@ -76,5 +76,20 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
                 .Include(u => u.Role)
                 .FirstOrDefault(u => u.UserName == userName);
         }
+
+        public bool EmailExists(string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool EmailExistsExcludeUser(string email, int excludeUserId)
+        {
+            return _context.Users.Any(u => u.Email == email && u.UserId != excludeUserId);
+        }
+
+        public Role? GetRoleById(int roleId)
+        {
+            return _context.Roles.FirstOrDefault(r => r.RoleId == roleId);
+        }
     }
 }

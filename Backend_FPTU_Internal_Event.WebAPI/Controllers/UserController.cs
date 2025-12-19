@@ -238,5 +238,74 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 });
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("update-profile-by-admin")]
+        [SwaggerOperation(
+    Summary = "Update User Profile by Admin",
+    Description = "Admin can update Username, Email, Password, and Role of any user. Password is optional - only updated if provided."
+)]
+        public IActionResult UpdateUserProfileByAdmin([FromQuery] int userId, [FromBody] UpdateUserProfileRequest request)
+        {
+            try
+            {
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                    });
+                }
+
+                var result = _userService.UpdateUserProfileByAdmin(userId, request);
+
+                if (result == null)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Failed to update user profile"
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User profile updated successfully by Admin",
+                    data = result
+                });
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
     }
 }

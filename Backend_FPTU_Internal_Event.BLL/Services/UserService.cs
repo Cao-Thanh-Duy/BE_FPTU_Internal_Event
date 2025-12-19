@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Backend_FPTU_Internal_Event.BLL.Services
@@ -130,5 +131,79 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
 
         }
+
+        public UserDTO? UpdateUserProfileByAdmin(int userId, UpdateUserProfileRequest request)
+        {
+            // 1. Check if user exists
+            var user = _userRepository.GetUserById(userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found");
+            }
+
+            // 2. Validate Role exists
+            var role = _userRepository.GetRoleById(request.RoleId);
+            if (role == null)
+            {
+                throw new KeyNotFoundException($"Role with ID {request.RoleId} not found");
+            }
+
+            if (!IsValidFptuEmail(request.Email))
+            {
+                throw new InvalidOperationException(
+                    "Email must end with @fptu.edu.vn"
+                );
+            }
+
+
+            // 3. Check if new email already exists (excluding current user)
+            if (request.Email != user.Email)
+            {
+                if (_userRepository.EmailExistsExcludeUser(request.Email, userId))
+                {
+                    throw new InvalidOperationException($"Email '{request.Email}' is already in use by another user");
+                }
+            }
+
+
+
+
+            // 4. Validate UserName (no special characters)
+            var regex = new System.Text.RegularExpressions.Regex(@"^[\p{L}0-9_ ]+$");
+            if (!regex.IsMatch(request.UserName))
+            {
+                throw new InvalidOperationException("UserName cannot contain special characters (only letters, numbers, and underscore allowed)");
+            }
+
+            // 5. Update user properties
+            user.UserName = request.UserName;
+            user.Email = request.Email;
+            user.RoleId = request.RoleId;
+
+            // 6. Update password if provided
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                user.HashPassword = HashPassword(request.Password);
+            }
+
+            // 7. Save changes
+            _userRepository.SaveChanges();
+
+            // 8. Return updated user DTO
+            return new UserDTO
+            {
+                UserId = user.UserId,
+                UserName = user.UserName,
+                Email = user.Email,
+                RoleName = role.RoleName
+            };
+        }
+
+        private bool IsValidFptuEmail(string email)
+        {
+            var regex = new Regex(@"^[a-zA-Z0-9._%+-]+@fptu\.edu\.vn$");
+            return regex.IsMatch(email);
+        }
+
     }
 }
