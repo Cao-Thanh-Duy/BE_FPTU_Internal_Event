@@ -17,11 +17,13 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
         private readonly ITicketRepository _ticketRepository;
         private readonly IEventRepository _eventRepository;
         private readonly IUserRepository _userRepository;
-        public TicketService(ITicketRepository ticketRepository, IEventRepository eventRepository, IUserRepository userRepository)
+        private readonly ISlotRepository _slotRepository;
+        public TicketService(ITicketRepository ticketRepository, IEventRepository eventRepository, IUserRepository userRepository, ISlotRepository slotRepository)
         {
             _ticketRepository = ticketRepository;
             _eventRepository = eventRepository;
             _userRepository = userRepository;
+            _slotRepository = slotRepository;
         }
 
         public TicketDTO GenerateTicket(GenTicketRequest request)
@@ -126,12 +128,31 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
             List<Ticket> tickets = _ticketRepository.GetTicketByUserId(user.UserId);
             List<TicketEventDTO> listTickets = new();
+
             if (tickets != null)
             {
-
                 foreach (var ticket in tickets)
                 {
                     var e = _eventRepository.GetEventById(ticket.EventId);
+
+                    // Get all slots for this event
+                    List<EventSlotDTO> slotEventDto = new();
+                    var slotEvent = _eventRepository.GetAllEventSchedules(ticket.EventId);
+                    foreach (var slot in slotEvent)
+                    {
+                        var slotdto = _slotRepository.GetSlotById(slot.SlotId);
+                        if (slotdto != null)
+                        {
+                            EventSlotDTO evslot = new()
+                            {
+                                StartTime = slotdto.StartTime,
+                                EndTime = slotdto.EndtTime,
+                                SlotName = slotdto.SlotName
+                            };
+                            slotEventDto.Add(evslot);
+                        }
+                    }
+
                     var ticketEventDto = new TicketEventDTO
                     {
                         EventName = e.EventName,
@@ -141,7 +162,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                         Status = ticket.Status,
                         TicketCode = ticket.TicketCode,
                         UserName = user.UserName,
-                       
+                        Slots = slotEventDto  // Add slots to response
                     };
                     listTickets.Add(ticketEventDto);
                 }
@@ -162,10 +183,29 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
         {
             var ticket = _ticketRepository.GetTicketByTicketCode(ticketCode)
                 ?? throw new Exception("Ticket is not exist!");
-            var user = _userRepository.GetUserById(ticket.UserId) 
+            var user = _userRepository.GetUserById(ticket.UserId)
                 ?? throw new Exception("User is not exits! ");
             var e = _eventRepository.GetEventById(ticket.EventId)
                 ?? throw new Exception("Event is not exits! ");
+
+            // Get all slots for this event
+            List<EventSlotDTO> slotEventDto = new();
+            var slotEvent = _eventRepository.GetAllEventSchedules(ticket.EventId);
+            foreach (var slot in slotEvent)
+            {
+                var slotdto = _slotRepository.GetSlotById(slot.SlotId);
+                if (slotdto != null)
+                {
+                    EventSlotDTO evslot = new()
+                    {
+                        StartTime = slotdto.StartTime,
+                        EndTime = slotdto.EndtTime,
+                        SlotName = slotdto.SlotName
+                    };
+                    slotEventDto.Add(evslot);
+                }
+            }
+
             return new TicketEventDTO
             {
                 EventName = e.EventName,
@@ -174,9 +214,9 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 StartDay = e.EventDate,
                 TicketCode = ticket.TicketCode,
                 TicketId = ticket.TicketId,
-                UserName = user.UserName
+                UserName = user.UserName,
+                Slots = slotEventDto  // Add slots to response
             };
-
         }
 
         public bool CheckIn(int ticketId)
