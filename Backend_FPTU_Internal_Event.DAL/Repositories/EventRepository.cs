@@ -139,7 +139,11 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
 
         public List<StaffEvent> GetAllStaffEvents(int eventId)
         {
-            return _context.StaffEvents.Where(se => se.EventId == eventId).ToList();
+            return _context.StaffEvents
+         .Include(se => se.User)
+             .ThenInclude(u => u.Role)
+         .Where(se => se.EventId == eventId)
+         .ToList();
         }
 
         public bool IsSlotOccupiedExcludeEvent(int venueId, DateOnly eventDate, int slotId, int excludeEventId)

@@ -20,6 +20,8 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         void RemoveStaffEvent(StaffEvent staffEvent);
         List<EventSchedule> GetAllEventSchedules(int eventId);
         List<SpeakerEvent> GetAllSpeakerEvents(int eventId);
+
+
         List<StaffEvent> GetAllStaffEvents(int eventId);
         void SaveChanges();
         bool IsSlotOccupied(int venueId, DateOnly eventDate, int slotId);

@@ -319,6 +319,25 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 SpeakerEventDTO speakerEventDTO = new() { SpeakerDescription = spearkerdto.SpeakerDescription, SpeakerName = spearkerdto.SpeakerName };
                 speakerEventDTOs.Add(speakerEventDTO);
             }
+
+            // NEW: Get Staff
+            List<StaffEventDTO> staffEventDTOs = new();
+            var staffEvents = _eventRepository.GetAllStaffEvents(eventEntity.EventId);
+            foreach (var staffEvent in staffEvents)
+            {
+                if (staffEvent.User != null)
+                {
+                    StaffEventDTO staffEventDTO = new()
+                    {
+                        UserId = staffEvent.UserId,
+                        UserName = staffEvent.User.UserName,
+                        Email = staffEvent.User.Email,
+                        RoleName = staffEvent.User.Role?.RoleName ?? "Unknown"
+                    };
+                    staffEventDTOs.Add(staffEventDTO);
+                }
+            }
+
             return new EventDTO
             {
                 EventId = eventEntity.EventId,
@@ -331,7 +350,8 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 VenueName = eventEntity.Venue?.VenueName ?? string.Empty,
                 LocationDetails = eventEntity.Venue?.LocationDetails ?? string.Empty,
                 SlotEvent = slotEventDto,
-                SpeakerEvent = speakerEventDTOs
+                SpeakerEvent = speakerEventDTOs,
+                StaffEvent = staffEventDTOs
 
             };
         }
