@@ -21,14 +21,23 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public VenueDTO? CreateVenue(CreateVenueRequest request)
         {
+            // Validate VenueName is not empty
+            if (string.IsNullOrWhiteSpace(request.VenueName))
+            {
+                throw new ArgumentException("Venue name cannot be empty");
+            }
 
-            //bắt thêm lỗi địa điểm đã tồn tại check name chữ lớn chữ nhỏ 
+            // Check if venue name already exists (case-insensitive, ignore spaces)
+            if (_venueRepository.VenueNameExists(request.VenueName))
+            {
+                throw new InvalidOperationException($"Venue with name '{request.VenueName}' already exists. Venue names must be unique (case-insensitive, spaces ignored).");
+            }
+
             var newVenue = new Venue
             {
-                VenueName = request.VenueName,
+                VenueName = request.VenueName.Trim(), // Trim leading/trailing spaces
                 MaxSeat = request.MaxSeat,
                 LocationDetails = request.LocationDetails
-
             };
 
             _venueRepository.AddVenue(newVenue);
@@ -36,6 +45,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
             return new VenueDTO
             {
+                VenueId = newVenue.VenueId,
                 VenueName = newVenue.VenueName,
                 MaxSeat = newVenue.MaxSeat,
                 LocationDetails = newVenue.LocationDetails
@@ -92,18 +102,33 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
         public VenueDTO? UpdateVenue(int venueId, CreateUpdateVenueRequest request)
         {
-            var venue = _venueRepository.GetVenueById(venueId) ?? throw new Exception("Venue do not exist");
-            venue.VenueName = request.VenueName;
+            var venue = _venueRepository.GetVenueById(venueId)
+                ?? throw new KeyNotFoundException($"Venue with ID {venueId} does not exist");
+
+            // Validate VenueName is not empty
+            if (string.IsNullOrWhiteSpace(request.VenueName))
+            {
+                throw new ArgumentException("Venue name cannot be empty");
+            }
+
+            // Check if new venue name conflicts with existing venues (excluding current venue)
+            if (_venueRepository.VenueNameExistsExcludeVenue(request.VenueName, venueId))
+            {
+                throw new InvalidOperationException($"Venue with name '{request.VenueName}' already exists. Venue names must be unique (case-insensitive, spaces ignored).");
+            }
+
+            venue.VenueName = request.VenueName.Trim();
             venue.MaxSeat = request.MaxSeat;
             venue.LocationDetails = request.LocationDetails;
 
             _venueRepository.SaveChanges();
+
             return new VenueDTO
             {
                 VenueId = venue.VenueId,
-                VenueName = request.VenueName,
-                MaxSeat = request.MaxSeat,
-                LocationDetails = request.LocationDetails
+                VenueName = venue.VenueName,
+                MaxSeat = venue.MaxSeat,
+                LocationDetails = venue.LocationDetails
             };
         }
     }

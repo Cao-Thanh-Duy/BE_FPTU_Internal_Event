@@ -60,5 +60,24 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
             }
             else return false;
         }
+
+        public bool VenueNameExists(string venueName)
+        {
+            // Remove all spaces and convert to lowercase for comparison
+            var normalizedName = venueName.Replace(" ", "").ToLower();
+
+            return _context.Venues.Any(v =>
+                v.VenueName.Replace(" ", "").ToLower() == normalizedName);
+        }
+
+        public bool VenueNameExistsExcludeVenue(string venueName, int excludeVenueId)
+        {
+            // Remove all spaces and convert to lowercase for comparison
+            var normalizedName = venueName.Replace(" ", "").ToLower();
+
+            return _context.Venues.Any(v =>
+                v.VenueId != excludeVenueId &&
+                v.VenueName.Replace(" ", "").ToLower() == normalizedName);
+        }
     }
 }

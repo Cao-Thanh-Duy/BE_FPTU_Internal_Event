@@ -17,5 +17,10 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         bool CheckExitVenueInEvent(int venueId);
 
         bool DeleteVenue(int venueId);
-    }
+
+     
+        bool VenueNameExists(string venueName);
+        bool VenueNameExistsExcludeVenue(string venueName, int excludeVenueId);
+    
+}
 }

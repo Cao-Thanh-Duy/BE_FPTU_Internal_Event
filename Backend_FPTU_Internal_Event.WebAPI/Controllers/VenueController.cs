@@ -30,7 +30,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     return Ok(new
                     {
                         success = true,
-                        message = "Create Venue succesfully",
+                        message = "Create Venue Successfully",
                         data = result
                     });
                 }
@@ -39,23 +39,35 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Create Venue succesfully",
-
+                        message = "Failed to create venue"
                     });
                 }
+            }
+            catch (ArgumentException argEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = argEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
             }
             catch (Exception ex)
             {
+                return StatusCode(500, new
                 {
-                    return StatusCode(500, new
-                    {
-                        success = false,
-                        message = ex.Message,
-
-                    });
-                }
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
             }
-
         }
 
         [HttpGet]

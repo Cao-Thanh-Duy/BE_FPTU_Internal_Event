@@ -1,4 +1,4 @@
-using Backend_FPTU_Internal_Event.DAL.Data;
+﻿using Backend_FPTU_Internal_Event.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Backend_FPTU_Internal_Event.BLL.Interfaces;
 using Backend_FPTU_Internal_Event.BLL.Services;
@@ -17,7 +17,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(args); // Khởi tạo app
 
             // Add services to the container.
 
