@@ -18,7 +18,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
 
         bool DeleteUser(int userId);
 
-        // NEW METHOD
+        
         UserDTO? UpdateUserProfileByAdmin(int userId, UpdateUserProfileRequest request);
     
 }

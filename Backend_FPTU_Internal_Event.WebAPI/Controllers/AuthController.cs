@@ -50,6 +50,38 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            try
+            {
+                var result = await _authService.GoogleLogin(request);
+
+                if (result == null)
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Invalid Google token or email not authorized. For K19 students, please ensure your email is registered in the system."
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
 
         // Test endpoint để kiểm tra JWT
         [Authorize]

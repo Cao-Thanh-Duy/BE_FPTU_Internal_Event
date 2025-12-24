@@ -18,7 +18,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [SwaggerOperation(
             Summary = "Get All User",
@@ -48,7 +48,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [SwaggerOperation(
             Summary = "Get User by Id",
@@ -142,7 +142,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [SwaggerOperation(
             Summary = "Update User",
@@ -242,9 +242,9 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPut("update-profile-by-admin")]
         [SwaggerOperation(
-    Summary = "Update User Profile by Admin",
-    Description = "Admin can update Username, Email, Password, and Role of any user. Password is optional - only updated if provided."
-)]
+            Summary = "Update User Profile by Admin",
+            Description = "Admin can ONLY update Username and Role of any user. Email and Password are NOT modifiable through this endpoint."
+        )]
         public IActionResult UpdateUserProfileByAdmin([FromQuery] int userId, [FromBody] UpdateUserProfileRequest request)
         {
             try

@@ -58,12 +58,15 @@ namespace Backend_FPTU_Internal_Event.WebAPI
                     policy.WithOrigins(
                         "http://localhost:5173",
                         "http://localhost:5174",
-                        "http://localhost:3000"
-                        
+                        "http://localhost:5175",
+                        "http://localhost:3000",
+                        "https://accounts.google.com" // Thêm Google OAuth origin
                     )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowCredentials()
+                    .SetIsOriginAllowed(origin => true) // Cho phép mọi origin trong dev
+                    .WithExposedHeaders("*"); // Expose tất cả headers
                 });
             });
 
