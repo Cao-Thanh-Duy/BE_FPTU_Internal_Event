@@ -148,12 +148,8 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 throw new KeyNotFoundException($"Role with ID {request.RoleId} not found");
             }
 
-            // 3. Validate UserName (no special characters)
-            var regex = new Regex(@"^[\p{L}0-9_ ]+$");
-            if (!regex.IsMatch(request.UserName))
-            {
-                throw new InvalidOperationException("UserName cannot contain special characters (only letters, numbers, and underscore allowed)");
-            }
+            
+           
 
             // 4. Update ONLY UserName and RoleId
             user.UserName = request.UserName;
