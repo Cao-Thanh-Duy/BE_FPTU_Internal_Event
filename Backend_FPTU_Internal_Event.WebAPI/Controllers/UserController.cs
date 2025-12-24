@@ -48,7 +48,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [SwaggerOperation(
             Summary = "Get User by Id",

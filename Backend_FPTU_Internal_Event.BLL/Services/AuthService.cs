@@ -84,7 +84,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                             Email = email,
                             UserName = payload.Name ?? email.Split('@')[0],
                             HashPassword = string.Empty, // Không cần password cho Google login
-                            RoleId = 3 // Mặc định là Student role (cần điều chỉnh theo DB của bạn)
+                            RoleId = 2 // Mặc định là Student role (cần điều chỉnh theo DB của bạn)
                         };
 
                         _userRepository.AddUser(newUser);
