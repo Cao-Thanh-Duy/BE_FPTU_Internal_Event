@@ -123,6 +123,12 @@ namespace Backend_FPTU_Internal_Event.WebAPI
             builder.Services.AddScoped<IEventRepository, EventRepository>();
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
             builder.Services.AddScoped<ITicketService, TicketService>();
+
+            //Feedback Services
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+            
             var app = builder.Build();
 
             // Auto migrate database and seed data

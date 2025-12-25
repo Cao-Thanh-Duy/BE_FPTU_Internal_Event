@@ -19,6 +19,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Data
         public DbSet<StaffEvent> StaffEvents { get; set; }
         public DbSet<SpeakerEvent> SpeakerEvents { get; set; }
         public DbSet<EventSchedule> EventSchedules { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; } // NEW
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -82,6 +83,40 @@ namespace Backend_FPTU_Internal_Event.DAL.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // Feedback (NEW)
+            modelBuilder.Entity<Feedback>(entity =>
+            {
+                entity.HasKey(e => e.FeedbackId);
+
+                entity.Property(e => e.Rating)
+                    .IsRequired();
+
+                entity.Property(e => e.Comment)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired();
+
+                // One Ticket can have only ONE Feedback
+                entity.HasIndex(e => e.TicketId)
+                    .IsUnique();
+
+                entity.HasOne(e => e.Ticket)
+                    .WithMany()
+                    .HasForeignKey(e => e.TicketId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Event)
+                    .WithMany()
+                    .HasForeignKey(e => e.EventId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             // Speaker
             modelBuilder.Entity<Speaker>(entity =>
             {
@@ -131,7 +166,6 @@ namespace Backend_FPTU_Internal_Event.DAL.Data
                     .HasForeignKey(e => e.SpeakerId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Update to use navigation property
                 entity.HasOne(e => e.Event)
                     .WithMany()
                     .HasForeignKey(e => e.EventId)
