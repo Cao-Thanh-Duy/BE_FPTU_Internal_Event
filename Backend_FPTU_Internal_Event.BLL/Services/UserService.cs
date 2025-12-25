@@ -168,11 +168,55 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             };
         }
 
+        public UserDTO? AddEmailForGoogleLogin(AddEmailRequest request)
+        {
+            // 1. Check if email already exists
+            var existingUser = _userRepository.GetUserByEmail(request.Email);
+            if (existingUser != null)
+            {
+                throw new InvalidOperationException($"Email '{request.Email}' already exists in the system");
+            }
+
+            // 2. Validate Role exists
+            var role = _userRepository.GetRoleById(request.RoleId);
+            if (role == null)
+            {
+                throw new KeyNotFoundException($"Role with ID {request.RoleId} not found");
+            }
+
+            // 3. Create user with empty password (for Google Login only)
+            var newUser = new User
+            {
+                UserName = request.UserName,
+                Email = request.Email,
+                HashPassword = string.Empty, // No password - Google Login only
+                RoleId = request.RoleId
+            };
+
+            _userRepository.AddUser(newUser);
+            _userRepository.SaveChanges();
+
+            // 4. Return created user
+            return new UserDTO
+            {
+                UserId = newUser.UserId,
+                UserName = newUser.UserName,
+                Email = newUser.Email,
+                RoleName = role.RoleName
+            };
+        }
+
+
+
+
         //private bool IsValidFptuEmail(string email)
         //{
         //    var regex = new Regex(@"^[a-zA-Z0-9._%+-]+@fptu\.edu\.vn$");
         //    return regex.IsMatch(email);
         //}
+
+
+
 
     }
 }

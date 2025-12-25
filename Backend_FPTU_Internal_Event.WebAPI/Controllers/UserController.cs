@@ -48,7 +48,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         
-        //[Authorize(Roles = "Admin")]
+      
         [HttpGet("{id}")]
         [SwaggerOperation(
             Summary = "Get User by Id",
@@ -294,6 +294,70 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                 {
                     success = false,
                     message = ioEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("add-email-for-k19")]
+        [SwaggerOperation(
+            Summary = "Add Email for K19 (Google Login Only)",
+            Description = "Admin adds K19 student email to whitelist. These users can ONLY login via Google OAuth. No password required."
+        )]
+        public IActionResult AddEmailForGoogleLogin([FromBody] AddEmailRequest request)
+        {
+            try
+            {
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                    });
+                }
+
+                var result = _userService.AddEmailForGoogleLogin(request);
+
+                return CreatedAtAction(
+                    nameof(GetUserById),
+                    new { id = result.UserId },
+                    new
+                    {
+                        success = true,
+                        message = "Email added successfully. User can now login via Google",
+                        data = result
+                    });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
                 });
             }
             catch (Exception ex)

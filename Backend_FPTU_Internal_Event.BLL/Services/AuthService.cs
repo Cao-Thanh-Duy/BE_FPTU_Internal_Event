@@ -69,6 +69,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 });
 
                 var email = payload.Email;
+                var googleName = payload.Name ?? email.Split('@')[0];
 
                 // Logic kiểm tra theo yêu cầu
                 if (email.EndsWith("@fpt.edu.vn"))
@@ -82,7 +83,7 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                         var newUser = new User
                         {
                             Email = email,
-                            UserName = payload.Name ?? email.Split('@')[0],
+                            UserName = googleName,
                             HashPassword = string.Empty, // Không cần password cho Google login
                             RoleId = 2 // Mặc định là Student role (cần điều chỉnh theo DB của bạn)
                         };
@@ -92,6 +93,15 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
 
                         // Reload user để có đầy đủ thông tin Role
                         existingUser = _userRepository.GetUserByEmail(email);
+                    }
+                    else
+                    {
+                        // K18 đã có trong DB - Update username từ Google nếu khác
+                        if (existingUser.UserName != googleName)
+                        {
+                            existingUser.UserName = googleName;
+                            _userRepository.SaveChanges();
+                        }
                     }
 
                     return GenerateLoginResponse(existingUser);
@@ -105,6 +115,13 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                     {
                         // Email chưa có trong DB, không cho phép login
                         return null;
+                    }
+
+                    // K19 login lần đầu - Update username từ Google (thay tên tạm thời)
+                    if (existingUser.UserName != googleName)
+                    {
+                        existingUser.UserName = googleName;
+                        _userRepository.SaveChanges();
                     }
 
                     return GenerateLoginResponse(existingUser);
