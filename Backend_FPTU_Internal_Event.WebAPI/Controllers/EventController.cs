@@ -92,7 +92,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
 
-        /// Create new event - Admin/Organizer only
+        /// Create new event - Organizer only
 
         [Authorize(Roles = "Organizer")]
         [HttpPost]
@@ -356,7 +356,79 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("change-status")]
+        [SwaggerOperation(
+           Summary = "Change Event Status (Approve/Reject)",
+           Description = "Admin can change event status to either 'Approve' or 'Reject'. When rejected, all related resources (speakers, slots, staff) will be freed."
+       )]
+        public IActionResult ChangeEventStatus([FromQuery] int eventId, [FromBody] ChangeEventStatusRequest request)
+        {
+            try
+            {
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                    });
+                }
 
+                var result = _eventService.ChangeEventStatus(eventId, request.Status);
+
+                if (result)
+                {
+                    var message = request.Status == "Approve"
+                        ? "Event approved successfully"
+                        : "Event rejected successfully. All resources (speakers, slots, staff) have been freed.";
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = message,
+                        data = new { eventId, status = request.Status }
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = $"Failed to change event status to {request.Status}"
+                    });
+                }
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
 
 
     }

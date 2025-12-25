@@ -19,6 +19,9 @@ namespace Backend_FPTU_Internal_Event.BLL.Interfaces
 
         bool RejectEvent(int enentId);
 
+
+        bool ChangeEventStatus(int eventId, string status);
+        
         List<EventDTO> GetEventsByStaffId(int staffId);
     }
 }

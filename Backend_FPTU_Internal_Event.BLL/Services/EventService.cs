@@ -786,5 +786,60 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             var events = _eventRepository.GetEventsByStaffId(staffId);
             return events.Select(e => MapToDTO(e)).ToList();
         }
+
+        public bool ChangeEventStatus(int eventId, string status)
+        {
+            var eventEntity = _eventRepository.GetEventById(eventId);
+
+            if (eventEntity == null)
+            {
+                throw new KeyNotFoundException($"Event with ID {eventId} not found");
+            }
+
+            // Validate status value
+            if (status != "Approve" && status != "Reject")
+            {
+                throw new InvalidOperationException($"Invalid status: {status}. Status must be either 'Approve' or 'Reject'");
+            }
+
+            if (status == "Approve")
+            {
+                // Simply approve - no relationship removal
+                eventEntity.Status = "Approve";
+                _eventRepository.SaveChanges();
+            }
+            else if (status == "Reject")
+            {
+                // Set status to Reject
+                eventEntity.Status = "Reject";
+
+                // Remove all relationships (free resources)
+
+                // 1. Remove all SpeakerEvents (free speakers)
+                var speakerEvents = _eventRepository.GetAllSpeakerEvents(eventId);
+                foreach (var speakerEvent in speakerEvents)
+                {
+                    _eventRepository.RemoveSpeakerEvent(speakerEvent);
+                }
+
+                // 2. Remove all EventSchedules (free slots)
+                var eventSchedules = _eventRepository.GetAllEventSchedules(eventId);
+                foreach (var eventSchedule in eventSchedules)
+                {
+                    _eventRepository.RemoveEventSchedule(eventSchedule);
+                }
+
+                // 3. Remove all StaffEvents (free staff)
+                var staffEvents = _eventRepository.GetAllStaffEvents(eventId);
+                foreach (var staffEvent in staffEvents)
+                {
+                    _eventRepository.RemoveStaffEvent(staffEvent);
+                }
+
+                _eventRepository.SaveChanges();
+            }
+
+            return true;
+        }
     }
 }
