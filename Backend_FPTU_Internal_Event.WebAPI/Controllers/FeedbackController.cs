@@ -90,6 +90,76 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
         }
 
         [Authorize]
+        [HttpPut("{feedbackId}")]
+        [SwaggerOperation(
+            Summary = "Update Feedback",
+            Description = "User can update their own feedback. Can only update Rating and Comment."
+        )]
+        public IActionResult UpdateFeedback(int feedbackId, [FromBody] UpdateFeedbackRequest request)
+        {
+            try
+            {
+                // Get userId from JWT token
+                var userIdClaim = User.FindFirst("userId")?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Invalid user token"
+                    });
+                }
+
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                    });
+                }
+
+                var result = _feedbackService.UpdateFeedback(feedbackId, request, userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Feedback updated successfully",
+                    data = result
+                });
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
+                });
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ioEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
+        [Authorize]
         [HttpGet("my-feedbacks")]
         [SwaggerOperation(
             Summary = "Get My Feedbacks",
@@ -155,6 +225,43 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
                     success = true,
                     message = "Feedback retrieved successfully",
                     data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    detail = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("event/{eventId}")]
+        [SwaggerOperation(
+            Summary = "Get All Feedbacks for Event",
+            Description = "Retrieve all feedbacks for a specific event (list view)"
+        )]
+        public IActionResult GetAllFeedbacksByEvent(int eventId)
+        {
+            try
+            {
+                var result = _feedbackService.GetAllFeedbacksByEventId(eventId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Retrieved {result.Count} feedbacks for event",
+                    data = result
+                });
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = knfEx.Message
                 });
             }
             catch (Exception ex)

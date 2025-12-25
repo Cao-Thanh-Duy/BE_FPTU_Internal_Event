@@ -168,5 +168,66 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
                 Feedbacks = feedbackDTOs
             };
         }
+
+        public FeedbackDTO UpdateFeedback(int feedbackId, UpdateFeedbackRequest request, int userId)
+        {
+            // 1. Get feedback by ID
+            var feedback = _feedbackRepository.GetFeedbackById(feedbackId);
+            if (feedback == null)
+            {
+                throw new KeyNotFoundException($"Feedback with ID {feedbackId} not found");
+            }
+
+            // 2. Validate feedback belongs to user
+            if (feedback.UserId != userId)
+            {
+                throw new InvalidOperationException("You can only update your own feedback");
+            }
+
+            // 3. Update feedback
+            feedback.Rating = request.Rating;
+            feedback.Comment = request.Comment;
+
+            _feedbackRepository.SaveChanges();
+
+            // 4. Return updated DTO
+            return new FeedbackDTO
+            {
+                FeedbackId = feedback.FeedbackId,
+                TicketId = feedback.TicketId,
+                UserId = feedback.UserId,
+                UserName = feedback.User?.UserName ?? string.Empty,
+                EventId = feedback.EventId,
+                EventName = feedback.Event?.EventName ?? string.Empty,
+                Rating = feedback.Rating,
+                Comment = feedback.Comment,
+                CreatedAt = feedback.CreatedAt
+            };
+        }
+
+        public List<FeedbackDTO> GetAllFeedbacksByEventId(int eventId)
+        {
+            // Validate event exists
+            var eventEntity = _eventRepository.GetEventById(eventId);
+            if (eventEntity == null)
+            {
+                throw new KeyNotFoundException($"Event with ID {eventId} not found");
+            }
+
+            var feedbacks = _feedbackRepository.GetFeedbacksByEventId(eventId);
+
+            return feedbacks.Select(f => new FeedbackDTO
+            {
+                FeedbackId = f.FeedbackId,
+                TicketId = f.TicketId,
+                UserId = f.UserId,
+                UserName = f.User?.UserName ?? string.Empty,
+                EventId = f.EventId,
+                EventName = f.Event?.EventName ?? string.Empty,
+                Rating = f.Rating,
+                Comment = f.Comment,
+                CreatedAt = f.CreatedAt
+            }).ToList();
+        }
     }
 }

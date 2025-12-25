@@ -11,5 +11,8 @@ namespace Backend_FPTU_Internal_Event.DAL.Interface
         List<Feedback> GetFeedbacksByUserId(int userId);
         Feedback AddFeedback(Feedback feedback);
         void SaveChanges();
+
+       
+    
     }
 }
