@@ -275,7 +275,7 @@ namespace Backend_FPTU_Internal_Event.WebAPI.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin,Organizer")]
+   
         [HttpGet("event/{eventId}/summary")]
         [SwaggerOperation(
             Summary = "Get Event Feedback Summary",
