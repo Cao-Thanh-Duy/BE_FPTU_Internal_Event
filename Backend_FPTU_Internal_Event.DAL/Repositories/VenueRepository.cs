@@ -41,12 +41,7 @@ namespace Backend_FPTU_Internal_Event.DAL.Repositories
 
         public bool CheckExitVenueInEvent(int venueId)
         {
-            var loadVenue = _context.Events.Find(venueId);
-            if (loadVenue != null)
-            {
-                return true;
-            }
-            else return false;
+            return _context.Events.Any(e => e.VenueId == venueId);
         }
 
         public bool DeleteVenue(int venueId)

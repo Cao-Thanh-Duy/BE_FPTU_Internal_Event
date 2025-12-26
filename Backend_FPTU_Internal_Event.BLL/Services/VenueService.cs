@@ -110,6 +110,11 @@ namespace Backend_FPTU_Internal_Event.BLL.Services
             {
                 throw new ArgumentException("Venue name cannot be empty");
             }
+            // Check if venue is being used in any events
+            if (_venueRepository.CheckExitVenueInEvent(venueId))
+            {
+                throw new InvalidOperationException($"Cannot update venue. Venue '{venue.VenueName}' is currently being used in one or more events. Please remove or reassign events before updating.");
+            }
 
             // Check if new venue name conflicts with existing venues (excluding current venue)
             if (_venueRepository.VenueNameExistsExcludeVenue(request.VenueName, venueId))
